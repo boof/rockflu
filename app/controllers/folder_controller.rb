@@ -57,7 +57,7 @@ class FolderController < ApplicationController
     @myfiles = @folder.list_files(@logged_in_user, file_order.rstrip)
 
     #get the correct URL
-    url = url_for(:controller => 'folder', :action => 'list', :id => nil)
+    url = url_for(:controller => 'folder', :action => :list, :id => nil)
 
     # it's nice to have the possibility to go up one level
     @folder_up = '<a href="' + url + '/' + @folder.parent.id.to_s + '">..</a>' if @folder.parent
@@ -117,7 +117,7 @@ class FolderController < ApplicationController
         copy_permissions_to_new_folder(@folder)
 
         # back to the list
-        redirect_to :action => 'list', :id => params[:id]
+        redirect_to :action => :list, :id => params[:id]
       else
         render_action 'new'
       end
@@ -133,7 +133,7 @@ class FolderController < ApplicationController
   def update
     if request.post?
       if @folder.update_attributes(:name => params[:folder][:name], :date_modified => Time.now)
-        redirect_to :action => 'list', :id => folder_id
+        redirect_to :action => :list, :id => folder_id
       else
         render_action 'rename'
       end
@@ -143,7 +143,7 @@ class FolderController < ApplicationController
   # Delete a folder.
   def destroy
     @folder.destroy
-    redirect_to :action => 'list', :id => folder_id
+    redirect_to :action => :list, :id => folder_id
   end
 
   # Saved the new permissions given by the user
@@ -157,7 +157,7 @@ class FolderController < ApplicationController
     end
 
     # Return to the folder
-    redirect_to :action => 'list', :id => folder_id
+    redirect_to :action => :list, :id => folder_id
   end
 
   # These methods are private:
@@ -228,7 +228,7 @@ class FolderController < ApplicationController
       # If the folder does exist, only authorize the read-rights if it's not the Root folder.
       unless Folder.find_by_id(folder_id)
         flash.now[:folder_error] = 'Someone else deleted the folder you are using. Your action was cancelled and you have been taken back to the root folder.'
-        redirect_to(:controller => 'folder', :action => 'list', :id => nil) and return false
+        redirect_to(:controller => 'folder', :action => :list, :id => nil) and return false
       else
         super unless folder_id == 1
       end
@@ -240,7 +240,7 @@ class FolderController < ApplicationController
       folder = Folder.find_by_id(folder_id)
       unless @logged_in_user.can_delete(folder.id)
         flash.now[:folder_error] = "You don't have delete permissions for this folder."
-        redirect_to :controller => 'folder', :action => 'list', :id => folder_id and return false
+        redirect_to :controller => 'folder', :action => :list, :id => folder_id and return false
       else
         authorize_deleting_for_children(folder)
       end
@@ -256,7 +256,7 @@ class FolderController < ApplicationController
           else
             flash[:folder_error] = error_msg
           end
-          redirect_to :controller => 'folder', :action => 'list', :id => folder_id and return false
+          redirect_to :controller => 'folder', :action => :list, :id => folder_id and return false
         else
           authorize_deleting_for_children(child_folder) # Checks the permissions of a child's children
         end

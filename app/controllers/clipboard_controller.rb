@@ -16,7 +16,7 @@ class ClipboardController < ApplicationController
     end
 
     # show what's on the clipboard
-    redirect_to :action => 'show'
+    redirect_to :action => :show
   end
 
   # Copy selected items to current folder
@@ -46,7 +46,7 @@ class ClipboardController < ApplicationController
     end
 
     # show what's on the clipboard
-    redirect_to :action => 'show'
+    redirect_to :action => :show
   end
 
   # Show what's on the clipboard

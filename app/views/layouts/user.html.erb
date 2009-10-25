@@ -40,7 +40,7 @@
 	<div id="middle">
 		<div class="actionLinks">
 			<% if @logged_in_user.is_admin? %>
-			<%= link_to 'Create user', { :action => 'new' } %>
+			<%= link_to 'Create user', { :action => :new } %>
 			<% end %>
 		</div>
 

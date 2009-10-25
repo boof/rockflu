@@ -27,7 +27,7 @@ class ApplicationController < ActionController::Base
     @folder = Folder.find(params[:id]) if params[:id]
   rescue
     flash.now[:folder_error] = 'Someone else deleted the folder you are using. Your action was cancelled and you have been taken back to the root folder.'
-    redirect_to :controller => 'folder', :action => 'list' and return false
+    redirect_to :controller => 'folder', :action => :list and return false
   end
 
   # The #authorize method is used as a <tt>before_hook</tt> in most controllers.
@@ -40,16 +40,16 @@ class ApplicationController < ActionController::Base
     @logged_in_user = nil
     if User.find(:all).length > 0
       session[:jumpto] = request.parameters
-      redirect_to :controller => 'authentication', :action => 'login' and return false
+      redirect_to :controller => 'authentication', :action => :login and return false
     else
-      redirect_to :controller => 'authentication', :action => 'create_admin' and return false
+      redirect_to :controller => 'authentication', :action => :create_admin and return false
     end
   end
 
   # If the session does not contain a user with admin privilages (is in the admins
   # group), the method redirects to /folder/list
   def authorize_admin
-    redirect_to(:controller => 'folder', :action => 'list') and return false unless @logged_in_user.is_admin?
+    redirect_to(:controller => 'folder', :action => :list) and return false unless @logged_in_user.is_admin?
   end
 
   # Redirect to the Root folder and show an error message
@@ -57,7 +57,7 @@ class ApplicationController < ActionController::Base
   def authorize_creating
     unless @logged_in_user.can_create(folder_id)
       flash.now[:folder_error] = "You don't have create permissions for this folder."
-      redirect_to :controller => 'folder', :action => 'list', :id => folder_id and return false
+      redirect_to :controller => 'folder', :action => :list, :id => folder_id and return false
     end
   end
 
@@ -66,7 +66,7 @@ class ApplicationController < ActionController::Base
   def authorize_reading
     unless @logged_in_user.can_read(folder_id)
       flash.now[:folder_error] = "You don't have read permissions for this folder."
-      redirect_to :controller => 'folder', :action => 'list', :id => nil and return false
+      redirect_to :controller => 'folder', :action => :list, :id => nil and return false
     end
   end
 
@@ -75,7 +75,7 @@ class ApplicationController < ActionController::Base
   def authorize_updating
     unless @logged_in_user.can_update(folder_id)
       flash.now[:folder_error] = "You don't have update permissions for this folder."
-      redirect_to :controller => 'folder', :action => 'list', :id => folder_id and return false
+      redirect_to :controller => 'folder', :action => :list, :id => folder_id and return false
     end
   end
 
@@ -83,7 +83,7 @@ class ApplicationController < ActionController::Base
   def authorize_deleting
     unless @logged_in_user.can_delete(folder_id)
       flash.now[:folder_error] = "You don't have delete permissions for this folder."
-      redirect_to :controller => 'folder', :action => 'list', :id => folder_id and return false
+      redirect_to :controller => 'folder', :action => :list, :id => folder_id and return false
     end
   end
 end

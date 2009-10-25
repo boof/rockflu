@@ -69,10 +69,10 @@ class FileController < ApplicationController
 
     if @myfile.save
       if USE_UPLOAD_PROGRESS
-        return_url = url_for(:controller => 'folder', :action => 'list', :id => folder_id)
+        return_url = url_for(:controller => 'folder', :action => :list, :id => folder_id)
         render :text => %(<script type="text/javascript">window.parent.UploadProgress.finish('#{return_url}');</script>)
       else
-        redirect_to :controller => 'folder', :action => 'list', :id => folder_id
+        redirect_to :controller => 'folder', :action => :list, :id => folder_id
       end
     else
       render :template =>'file/upload_without_progress' unless USE_UPLOAD_PROGRESS
@@ -99,7 +99,7 @@ class FileController < ApplicationController
   def update
     if request.post?
       if @myfile.update_attributes(:filename => Myfile.base_part_of(params[:myfile][:filename]), :date_modified => Time.now)
-        redirect_to :controller => 'folder', :action => 'list', :id => folder_id
+        redirect_to :controller => 'folder', :action => :list, :id => folder_id
       else
         render_action 'rename'
       end
@@ -120,7 +120,7 @@ class FileController < ApplicationController
   # Delete a file.
   def destroy
     @myfile.destroy
-    redirect_to :controller => 'folder', :action => 'list', :id => folder_id
+    redirect_to :controller => 'folder', :action => :list, :id => folder_id
   end
 
   # These methods are private:
@@ -132,6 +132,6 @@ class FileController < ApplicationController
       @myfile = Myfile.find(params[:id])
     rescue
       flash.now[:folder_error] = 'Someone else deleted the file you are using. Your action was cancelled and you have been taken back to the root folder.'
-      redirect_to :controller => 'folder', :action => 'list' and return false
+      redirect_to :controller => 'folder', :action => :list and return false
     end
 end

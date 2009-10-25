@@ -7,7 +7,7 @@
 	<meta http-equiv="X-UA-Compatible" content="chrome=1">
 	<title>Rockflu</title>
 	<%= stylesheet_link_tag 'boxroom' %>
-	<%= auto_discovery_link_tag(:rss, { :controller => 'folder', :action => 'feed', :id => controller.folder_id, :access_key => @logged_in_user.rss_access_key })%>
+	<%= auto_discovery_link_tag(:rss, { :controller => 'folder', :action => :feed, :id => controller.folder_id, :access_key => @logged_in_user.rss_access_key })%>
 	<%= javascript_include_tag :defaults %>
 </head>
 <body>

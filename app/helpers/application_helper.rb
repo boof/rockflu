@@ -9,7 +9,7 @@ module ApplicationHelper
   # Link to self determines wether every part of the path links to itself.
   def path(folder, link_to_self)
     # the base url for a path is always the same:
-    url = url_for(:controller => 'folder', :action => 'list', :id => nil)
+    url = url_for(:controller => 'folder', :action => :list, :id => nil)
 
     # start with the deepest folder and work your way up
     if link_to_self
