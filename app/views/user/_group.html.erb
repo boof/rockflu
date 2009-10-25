@@ -1,0 +1,15 @@
+<% if @user.group_ids.include? group.id %>
+<% checked = 'checked' %>
+<% else %>
+<% checked = '' %>
+<% end %>
+
+<% if @user and @user.is_the_administrator? and group.is_the_administrators_group? %>
+<td style="color:#818181;"><%= check_box('belongs_to_group', group.id, {:checked => checked, :disabled => true}, 'yes', 'no') %> <%= h(group.name) %></td>
+<% else %>
+<td><%= check_box('belongs_to_group', group.id, {:checked => checked}, 'yes', 'no') %> <%= h(group.name) %></td>
+<% end %>
+
+<% if group_counter % 3 == 0 %>
+</tr><tr>
+<% end %>
