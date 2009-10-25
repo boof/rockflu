@@ -1,3 +1,26 @@
-Thank you for trying Boxroom!
+This is a fork of boxroom, special flavoured.
 
-Please go to http://boxroom.rubyforge.org/how-to-install.html for installation instructions.
+### CHANGES
+ * google chrome frame
+ * jquery
+ * no fancy jquery effects
+ * xhtml doctype
+ * packed gems
+ * clean config files
+ * Rails 2.3.4
+ * maybe autodetection for apache upload progress module
+ * maybe jPlayer
+ * voting
+ * calendar
+
+### INSTALL
+
+ 1. git clone git://github.com/boof/rockflu.git
+ 2. # configure your datebase
+ 3. # configure boxroom in config/initializers/boxroom.rb
+ 4. mkdir uploads # or whatever
+ 5. rake gems:build
+ 6. # start application in thin, mongrel, whatever ...
+ 7. # launch your browser and visit your local rockflu
+ 8. # create admin
+ 9. # ...
