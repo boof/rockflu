@@ -8,9 +8,9 @@
 	<title>Rockflu</title>
 	<%= stylesheet_link_tag 'boxroom' %>
 	<%= auto_discovery_link_tag(:rss, { :controller => 'folder', :action => :feed, :id => controller.folder_id, :access_key => @logged_in_user.rss_access_key })%>
-	<%= javascript_include_tag :defaults %>
+	<%= javascript_include_tag 'jquery-1.3.2.min' %>
 </head>
-<body>
+<body id="foldersLayout">
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
 	<div id="chromeFrame"></div>
 	<script>
@@ -33,14 +33,14 @@
 
 		<div class="topNavigation">
 			<div class="links">
-				<%= render :partial=>'shared/go_to_menu' %>
+				<%= render :partial => 'shared/navigation' %>
 			</div>
 		</div>
 	</div>
 
 	<div id="middle">
 		<div class="actionLinks">
-			<%= render :partial=>'shared/create_file_folder' %>
+			<%= render :partial => 'sidebar' %>
 		</div>
 
 		<div class="content">

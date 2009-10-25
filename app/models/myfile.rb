@@ -4,6 +4,7 @@ require 'zip/zipfilesystem'
 # It's called Myfile, because File is a reserved word.
 # Files are in (belong to) a folder and are uploaded by (belong to) a User.
 class Myfile < ActiveRecord::Base
+  set_table_name :files
   acts_as_ferret :store_class_name => true, :fields => { :text => { :store => :yes }, :filename => { :store => :no } }
 
   belongs_to :folder
@@ -18,6 +19,15 @@ class Myfile < ActiveRecord::Base
     if self.filename.blank?
       errors.add(:filename, " can't blank.")
     end
+  end
+
+  def date_modified
+    logger.warn "date_modified is deprecated, please use updated_at (#{ caller.at -2 })"
+    updated_at
+  end
+  def date_modified=(value)
+    logger.warn "date_modified is deprecated, please use updated_at (#{ caller.at -2 })"
+    self.updated_at = value
   end
 
   # Accessor that receives the data from the form in the view.

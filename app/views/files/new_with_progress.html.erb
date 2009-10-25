@@ -14,7 +14,7 @@
 <div id="results"></div>
 <div id="progress-bar"><span id="initial-status">0%</span></div>
 
-<%= link_to 'Back', :controller => 'folder', :action => :list, :id => controller.folder_id %>
+<%= link_to 'Back', folder_path(current.folder) %>
 
 <script type="text/javascript">
 function checkFile()

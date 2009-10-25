@@ -9,13 +9,13 @@
 <br />
 
 <label for="user_password">
-	<% controller.action_name != 'new' ? 'New p' : 'P' %>assword
+	<%= controller.action_name != 'new' ? 'New p' : 'P' %>assword
 </label><br/>
 <%= password_field 'user', 'password', :style => 'width:220px;' %><br />
 <br />
 
 <label for="user_password_confirmation">
-	Confirm <% controller.action_name != 'new' ? 'New p' : 'P' %>assword
+	Confirm <%= controller.action_name != 'new' ? 'New p' : 'P' %>assword
 </label><br/>
 <%= password_field 'user', 'password_confirmation', :style => 'width:220px;' %><br />
 <br />

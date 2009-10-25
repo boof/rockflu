@@ -1,17 +1,24 @@
 # Helper methods for folder views
-module FolderHelper
+module FoldersHelper
   # Creates a link in the folder list view. Clicking the link will order the contents of a folder
   # by the field supplied in order_by. If the contents of the folder are already ordered by 'order_by',
   # clicking the link will reverse the order. This helper only generates the links for this. The actual
   # functionality is implemented in FolderController.list
   def link_order(name, order_by)
-    if params[:order] == nil and params[:order_by] == order_by
-      link_to(name, :action => :list, :id => params[:id], :order_by => order_by, :order => 'DESC') + image_tag('asc.png')
-    elsif params[:order] and params[:order_by] == order_by
-      link_to(name, :action => :list, :id => params[:id], :order_by => order_by) + image_tag('desc.png')
+    if !params[:order] and params[:order_by] == order_by
+      path = folder_path current.folder,
+          :order_by => order_by,
+          :order => 'DESC'
+
+      appendix = image_tag 'asc.png'
     else
-      link_to name, :action => :list, :id => params[:id], :order_by => order_by
+      path = folder_path current.folder, :order_by => order_by
+      if params[:order] and params[:order_by] == order_by
+        appendix = image_tag 'desc.png'
+      end
     end
+
+    "#{ link_to name, path }#{ appendix }"
   end
 
   # Creates a check box and checks/unchecks, disables it depending on the given parameters.

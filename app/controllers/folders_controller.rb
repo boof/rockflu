@@ -1,6 +1,5 @@
 # The folder controller contains the following actions:
-# [#index]              the default action, redirects to list
-# [#list]               list files and sub folders in a folder
+# [#show]               shows contents of folder
 # [#feed]               authorizes, sets appropriate variables and header for RSS feed
 # [#feed_warning]       renders page with explanations/warnings about RSS feed
 # [#new]                shows the form for creating a new folder
@@ -9,34 +8,24 @@
 # [#update]             updates the attributes of a folder
 # [#destroy]            delete a folder
 # [#update_permissions] save the new rights given by the user
-class FolderController < ApplicationController
+class FoldersController < ApplicationController
   skip_before_filter :authorize, :only => :feed
 
-  before_filter :does_folder_exist, :except => [:list, :feed, :feed_warning]
+  before_filter :does_folder_exist, :except => [:show, :feed, :feed_warning]
   before_filter :authorize_creating, :only => [:new, :create]
-  before_filter :authorize_reading, :only => :list
-  before_filter :authorize_updating, :only => [:rename, :update, :update_rights]
+  before_filter :authorize_reading, :only => :show
+  before_filter :authorize_updating, :only => [:edit, :update, :edit_permissions, :update_permissions]
   before_filter :authorize_deleting, :only => :destroy
 
-  # Sessions are not needed for feeds
-  session :off, :only => 'feed'
-  layout 'folder', :except => 'feed'
-
-  # The default action, redirects to list.
-  def index
-    list
-    render_action 'list'
-  end
-
   # List the files and sub-folders in a folder.
-  def list
+  def show
     # Get the folder
-    @folder = Folder.find_by_id(folder_id)
+    @folder = Folder.find_by_id params[:id]
 
     # Set if the user is allowed to update or delete in this folder;
     # these instance variables are used in the view.
-    @can_update = @logged_in_user.can_update(@folder.id)
-    @can_delete = @logged_in_user.can_delete(@folder.id)
+    @can_update = current.user.can_update @folder.id
+    @can_delete = current.user.can_delete @folder.id
 
     # determine the order in which files are shown
     file_order = 'filename '
@@ -45,33 +34,26 @@ class FolderController < ApplicationController
 
     # determine the order in which folders are shown
     folder_order = 'name '
-    if params[:order_by] and params[:order_by] != 'filesize'    
+    if params[:order_by] and params[:order_by] != 'filesize'
       folder_order = params[:order_by] + ' '
       folder_order += params[:order] if params[:order]
     end
 
     # List of subfolders
-    @folders = @folder.list_subfolders(@logged_in_user, folder_order.rstrip)
-
+    @folders = @folder.list_subfolders(current.user, folder_order.rstrip)
     # List of files in the folder
-    @myfiles = @folder.list_files(@logged_in_user, file_order.rstrip)
-
-    #get the correct URL
-    url = url_for(:controller => 'folder', :action => :list, :id => nil)
-
-    # it's nice to have the possibility to go up one level
-    @folder_up = '<a href="' + url + '/' + @folder.parent.id.to_s + '">..</a>' if @folder.parent
+    @files = @folder.list_files(current.user, file_order.rstrip)
   end
 
   # Authorizes, sets the appropriate variables and headers.
   # The feed is actually implemented in: app/views/folder/feed.rxml.
   def feed
     # check for valid access key:
-    user = User.find_by_rss_access_key(params[:access_key])
+    user = User.find_by_rss_access_key params[:access_key]
     @authorized = !user.blank?
 
     # get the folder
-    @folder = Folder.find_by_id(folder_id)
+    @folder = Folder.find_by_id params[:id]
 
     # set appriopriate instance variables,
     # so the feed can be created in folder.rxml
@@ -84,80 +66,62 @@ class FolderController < ApplicationController
       end
     end
 
-    # finally, set correct header
-    if @authorized
-      headers['Content-Type'] = 'text/xml'
-    else
-      headers['Content-Type'] = 'text/html'
+    respond_to do |format|
+      format.xml {}
     end
-  end
-
-  # Page that shows warning about RSS
-  # and the feed's authorization.
-  def feed_warning
-    render
   end
 
   # Shows the form where a user can enter the name for the a folder.
   # The new folder will be stored in the 'current' folder.
   def new
-    @folder = Folder.new
+    @parent = Folder.find params[:parent_id]
+    @folder = @parent.children.new
   end
 
   # Create a new folder with the posted variables from the 'new' view.
   def create
-    if request.post?
-      @folder = Folder.new(params[:folder])
-      @folder.parent_id = folder_id
-      @folder.date_modified = Time.now
-      @folder.user = @logged_in_user
+    @parent = Folder.find params[:parent_id]
+    @folder = @parent.children.new params[:folder]
+    @folder.user = current.user
 
-      if @folder.save
-        # copy groups rights on parent folder to new folder
-        copy_permissions_to_new_folder(@folder)
+    if @folder.save
+      # TODO: move this to Folder.before_create
+      # copy groups rights on parent folder to new folder
+      copy_permissions_to_new_folder(@folder)
 
-        # back to the list
-        redirect_to :action => :list, :id => params[:id]
-      else
-        render_action 'new'
-      end
+      # back to the list
+      redirect_to folder_path(@folder)
+    else
+      render :action => :new
     end
   end
 
-  # Show a form with the current name of the folder in a text field.
-  def rename
-    render
-  end
 
   # Update the folder attributes with the posted variables from the 'rename' view.
   def update
-    if request.post?
-      if @folder.update_attributes(:name => params[:folder][:name], :date_modified => Time.now)
-        redirect_to :action => :list, :id => folder_id
-      else
-        render_action 'rename'
-      end
+    if current.folder.update_attribute(:name, params[:folder][:name])
+      redirect_to folder_path(current.folder.parent)
+    else
+      render :edit
     end
   end
 
   # Delete a folder.
   def destroy
     @folder.destroy
-    redirect_to :action => :list, :id => folder_id
+    redirect_to folder_path(folder_id)
   end
 
   # Saved the new permissions given by the user
   def update_permissions
-    if request.post? and @logged_in_user.is_admin?
-      # update the create, read, update, delete right for this folder:
+    if current.user.is_admin?
       update_group_permissions(folder_id, params[:create_check_box], 'create', params[:update_recursively][:checked] == 'yes' ? true : false)
       update_group_permissions(folder_id, params[:read_check_box], 'read', params[:update_recursively][:checked] == 'yes' ? true : false)
       update_group_permissions(folder_id, params[:update_check_box], 'update', params[:update_recursively][:checked] == 'yes' ? true : false)
       update_group_permissions(folder_id, params[:delete_check_box], 'delete', params[:update_recursively][:checked] == 'yes' ? true : false)
     end
 
-    # Return to the folder
-    redirect_to :action => :list, :id => folder_id
+    redirect_to folder_path(folder_id)
   end
 
   # These methods are private:

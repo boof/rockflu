@@ -8,22 +8,20 @@
 # [#update]            updates the name of a file
 # [#destroy]           delete files
 # [#preview]           preview file; possibly with highlighted search words
-class FileController < ApplicationController
+class FilesController < ApplicationController
   skip_before_filter :authorize, :only => :progress
 
-  before_filter :does_folder_exist, :only => [:upload, :do_the_upload] # if the folder DOES exist, @folder is set to it
-  before_filter :does_file_exist, :except => [:upload, :progress, :do_the_upload, :validate_filename] # if the file DOES exist, @myfile is set to it
-  before_filter :authorize_creating, :only => :upload
-  before_filter :authorize_reading, :only => [:download, :preview]
-  before_filter :authorize_updating, :only => [:rename, :update]
+  before_filter :does_folder_exist, :only => [:new, :create] # if the folder DOES exist, @folder is set to it
+  before_filter :assign_file, :except => [:new, :progress, :create, :validate_filename]
+  before_filter :authorize_creating, :only => :new
+  before_filter :authorize_reading, :only => [:show, :preview]
+  before_filter :authorize_updating, :only => [:edit, :update]
   before_filter :authorize_deleting, :only => :destroy
-
-  session :off, :only => :progress
 
   # The requested file will be downloaded to the user's system.
   # Which user downloaded which file at what time will be logged.
   # (adapted from http://wiki.rubyonrails.com/rails/pages/HowtoUploadFiles)
-  def download
+  def show
     # Log the 'usage' and return the file.
     usage = Usage.new
     usage.download_date_time = Time.now
@@ -45,37 +43,36 @@ class FileController < ApplicationController
   end
 
   # Shows the form where a user can select a new file to upload.
-  def upload
-    @myfile = Myfile.new
-    if USE_UPLOAD_PROGRESS
-      render
-    else
-      render :template =>'file/upload_without_progress'
-    end
+  def new
+    @file = Myfile.new
+    render :template => 'files/upload_with_progress' if USE_UPLOAD_PROGRESS
   end
 
   # Upload the file and create a record in the database.
   # The file will be stored in the 'current' folder.
-  def do_the_upload
-    @myfile = Myfile.new(params[:myfile])
-    @myfile.folder_id = folder_id
-    @myfile.date_modified = Time.now
-    @myfile.user = @logged_in_user
+  def create
+    @file = Myfile.new(params[:myfile])
+    @file.folder_id = folder_id
+    @file.user = current.user
+
+    # FIXME: triple check for upload progress, let this do a module presenting a state
 
     # change the filename if it already exists
-    if USE_UPLOAD_PROGRESS and not Myfile.find_by_filename_and_folder_id(@myfile.filename, folder_id).blank?
-      @myfile.filename = @myfile.filename + ' (' + Time.now.strftime('%Y%m%d%H%M%S') + ')' 
+    if USE_UPLOAD_PROGRESS and !Myfile.find_by_filename_and_folder_id(@file.filename, current.folder.id).blank?
+      @file.filename = "#{ @file.filename } (#{ Time.now.strftime '%Y%m%d%H%M%S' })"
     end
 
-    if @myfile.save
+    if @file.save
       if USE_UPLOAD_PROGRESS
-        return_url = url_for(:controller => 'folder', :action => :list, :id => folder_id)
+        return_url = folder_path(current.folder)
         render :text => %(<script type="text/javascript">window.parent.UploadProgress.finish('#{return_url}');</script>)
       else
-        redirect_to :controller => 'folder', :action => :list, :id => folder_id
+        redirect_to folder_path(current.folder)
       end
+    elsif USE_UPLOAD_PROGRESS
+      render :template =>'file/upload_with_progress' 
     else
-      render :template =>'file/upload_without_progress' unless USE_UPLOAD_PROGRESS
+      render :new
     end
   end
 
@@ -91,7 +88,7 @@ class FileController < ApplicationController
   end
 
   # Show a form with the current name of the file in a text field.
-  def rename
+  def edit
     render
   end
 
@@ -120,7 +117,7 @@ class FileController < ApplicationController
   # Delete a file.
   def destroy
     @myfile.destroy
-    redirect_to :controller => 'folder', :action => :list, :id => folder_id
+    redirect_to folder_path(current.folder)
   end
 
   # These methods are private:
@@ -128,10 +125,10 @@ class FileController < ApplicationController
   private
     # Check if a file exists before executing an action.
     # If it doesn't exist: redirect to 'list' and show an error message
-    def does_file_exist
-      @myfile = Myfile.find(params[:id])
+    def assign_file
+      @myfile = Myfile.find params[:id]
     rescue
-      flash.now[:folder_error] = 'Someone else deleted the file you are using. Your action was cancelled and you have been taken back to the root folder.'
-      redirect_to :controller => 'folder', :action => :list and return false
+      flash.now[:folder_error] = 'Someone else deleted the file you are using. Your action was cancelled and you have been taken back to the parent folder.'
+      redirect_to folder_path(current.folder)
     end
 end

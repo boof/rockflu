@@ -13,6 +13,16 @@ class Folder < ActiveRecord::Base
   validates_presence_of :name
 
   attr_accessible :name
+  def to_s; name end
+
+  def date_modified
+    logger.warn "date_modified is deprecated, please use updated_at (#{ caller.at -2 })"
+    updated_at
+  end
+  def date_modified=(value)
+    logger.warn "date_modified is deprecated, please use updated_at (#{ caller.at -2 })"
+    self.updated_at = value
+  end
 
   # List subfolders
   # for the given user in the given order.
@@ -48,18 +58,11 @@ class Folder < ActiveRecord::Base
 
   # Create the Root folder
   def self.create_root_folder
-    if User.admin_exists? #and  Folder.root_folder_exists?
-      folder = self.new
-      folder.name = 'Root folder'
-      folder.date_modified = Time.now
-      folder.is_root = true
-
-      # This folder is created by the admin
-      if user = User.find_by_is_the_administrator(true)
-        folder.user = user
+    if user = User.find_by_is_the_administrator(true)
+      create :name => '/' do |f|
+        f.is_root = true
+        f.user = user
       end
-
-      folder.save # this hopefully returns true
     end
   end
 end

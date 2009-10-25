@@ -1,0 +1,9 @@
+<ul id="sidebar">
+	<% if current.user.can_create(current.folder.id) %>
+	<li><%= link_to 'Create Folder', new_folder_path(:parent_id => current.folder.id) %></li>
+	<li><%= link_to 'Upload File', new_folder_file_path(current.folder) %></li>
+	<% end %>
+	<% if @logged_in_user.is_admin? %>
+	<li><%= link_to 'Permissions', edit_permissions_folder_path(current.folder) %></li>
+	<% end %>
+</ul>

@@ -18,7 +18,7 @@ class AuthenticationController < ApplicationController
       # Create the session and redirect
       unless logged_in_user.blank?
         session[:user_id] = logged_in_user.id
-        jumpto = session[:jumpto] || { :action => :list, :controller => 'folder' }
+        jumpto = session[:jumpto] || root_path
         session[:jumpto] = nil
         redirect_to(jumpto)
       else
@@ -49,7 +49,7 @@ class AuthenticationController < ApplicationController
         Folder.create_root_folder
         GroupPermission.create_initial_permissions
         session[:user_id] = @user.id # Login
-        redirect_to(:action => :list, :controller => 'folder')
+        redirect_to root_path
       end
 
       # Create the initial Ferret index for files

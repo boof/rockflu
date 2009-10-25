@@ -1,0 +1,31 @@
+<p class="title">
+	<%= path(@folder, false) %>
+	&nbsp;
+	<%= link_to 'RSS', feed_folder_path(@folder, :access_key => @logged_in_user.rss_access_key, :format => :xml), :class => 'small', :onclick => "alert('WARNING! A PERSONAL access key is used to authorize access to the feeds. DO NOT SHARE THIS ACCESS KEY! Anyone can see the files and folders in your system if you do.');" %>
+</p>
+
+<% if flash[:folder_error] %>
+<div id="error"><%= flash[:folder_error] %></div>
+<% end %>
+
+<table class="grid">
+	<tr>
+		<th></th>
+		<th width="239"><%= link_order 'Name', 'name' %></th>
+		<th width="82"><%= link_order 'Size', 'filesize' %></th>
+		<th><%= link_order 'Date Modified', 'updated_at' %></th>
+		<th colspan="3"></th>
+	</tr>
+	<% if parent = @folder.parent %>
+	<tr class="<%= cycle('even', 'odd') %>">
+		<td><%= image_tag('folder.png') %></td>
+		<td><%= link_to '..', folder_path(parent) %></td>
+		<td>--</td>
+		<td>--</td>
+		<td colspan="3"></td>
+	</tr>
+	<% end %>
+	<%= render :partial => 'folder', :collection => @folders %>
+	<%= render :partial => 'file', :collection => @files %>
+</table>
+</div></div>

@@ -9,7 +9,7 @@
 	<%= stylesheet_link_tag 'boxroom' %>
 	<%= javascript_include_tag 'application' %>
 </head>
-<body>
+<body id="usersLayout">
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
 	<div id="chromeFrame"></div>
 	<script>
@@ -32,7 +32,7 @@
 
 		<div class="topNavigation">
 			<div class="links">
-				<%= render :partial=>'shared/go_to_menu' %>
+				<%= render :partial => 'shared/navigation' %>
 			</div>
 		</div>
 	</div>

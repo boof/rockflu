@@ -9,17 +9,32 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 4) do
+ActiveRecord::Schema.define(:version => 20091025205242) do
+
+  create_table "files", :force => true do |t|
+    t.string   "filename"
+    t.integer  "filesize"
+    t.integer  "folder_id",  :default => 0
+    t.integer  "user_id",    :default => 0
+    t.boolean  "indexed",    :default => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "files", ["filename"], :name => "index_files_on_filename"
+  add_index "files", ["folder_id"], :name => "index_files_on_folder_id"
+  add_index "files", ["indexed"], :name => "index_files_on_indexed"
+  add_index "files", ["user_id"], :name => "index_files_on_user_id"
 
   create_table "folders", :force => true do |t|
     t.string   "name"
-    t.datetime "date_modified"
-    t.integer  "user_id",       :default => 0
-    t.integer  "parent_id",     :default => 0
-    t.boolean  "is_root",       :default => false
+    t.integer  "user_id",    :default => 0
+    t.integer  "parent_id",  :default => 0
+    t.boolean  "is_root",    :default => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
-  add_index "folders", ["date_modified"], :name => "index_folders_on_date_modified"
   add_index "folders", ["is_root"], :name => "index_folders_on_is_root"
   add_index "folders", ["name"], :name => "index_folders_on_name"
   add_index "folders", ["parent_id"], :name => "index_folders_on_parent_id"
@@ -56,22 +71,6 @@ ActiveRecord::Schema.define(:version => 4) do
 
   add_index "groups_users", ["group_id", "user_id"], :name => "index_groups_users_on_group_id_and_user_id"
 
-  create_table "myfiles", :force => true do |t|
-    t.string   "filename"
-    t.integer  "filesize"
-    t.datetime "date_modified"
-    t.integer  "folder_id",     :default => 0
-    t.integer  "user_id",       :default => 0
-    t.boolean  "indexed",       :default => false
-  end
-
-  add_index "myfiles", ["date_modified"], :name => "index_myfiles_on_date_modified"
-  add_index "myfiles", ["filename"], :name => "index_myfiles_on_filename"
-  add_index "myfiles", ["filesize"], :name => "index_myfiles_on_filesize"
-  add_index "myfiles", ["folder_id"], :name => "index_myfiles_on_folder_id"
-  add_index "myfiles", ["indexed"], :name => "index_myfiles_on_indexed"
-  add_index "myfiles", ["user_id"], :name => "index_myfiles_on_user_id"
-
   create_table "usages", :force => true do |t|
     t.datetime "download_date_time"
     t.integer  "myfile_id",          :default => 0
@@ -86,16 +85,14 @@ ActiveRecord::Schema.define(:version => 4) do
     t.string  "name"
     t.string  "email"
     t.string  "hashed_password"
-    t.boolean "is_the_administrator", :default => false
     t.string  "password_salt"
     t.string  "rss_access_key"
+    t.boolean "is_the_administrator", :default => false
   end
 
   add_index "users", ["email"], :name => "index_users_on_email"
-  add_index "users", ["hashed_password"], :name => "index_users_on_hashed_password"
   add_index "users", ["is_the_administrator"], :name => "index_users_on_is_the_administrator"
   add_index "users", ["name"], :name => "index_users_on_name"
-  add_index "users", ["password_salt"], :name => "index_users_on_password_salt"
   add_index "users", ["rss_access_key"], :name => "index_users_on_rss_access_key"
 
 end

@@ -1,0 +1,11 @@
+<p class="title">Upload file</p>
+
+<% form_for @file, :file, :url => folder_files_path(current.folder), :html => {:multipart => true} do |form| %>
+<%= myfile_to_file(error_messages_for('file')) %>
+<%= form.label :myfile, 'Select a file' %><br />
+<%= form.file_field 'myfile' %><br />
+<br />
+<%= submit_tag 'Upload' %>
+<% end %>
+
+<%= link_to 'Back', folder_path(current.folder) %>

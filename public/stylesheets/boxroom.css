@@ -224,7 +224,17 @@ input.searchField
     color: #FFFFFF;
 }
 
-.activeLink
+#sidebar {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.activeLink,
+#foldersLayout #gotoFolders,
+#filesLayout #gotoFolders,
+#usersLayout #gotoUsers,
+#groupsLayout #gotoGroups
 {
     background-color: #5E181D;
 }

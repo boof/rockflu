@@ -1,0 +1,8 @@
+<p class="title">New folder</p>
+
+<% form_for current.folder do |form| %>
+<%= render form %>
+<%= submit_tag 'Create' %>
+<% end %>
+
+<%= link_to 'Back', folder_path(current.folder) %>

@@ -1,0 +1,21 @@
+<tr class="<%= cycle('even', 'odd') %>">
+	<td><%= image_tag 'file.png' %></td>
+	<td><%= link_to h(file.filename), folder_file_path(current.folder, file) %></td>
+	<td><%= file.filesize %> KB</td>
+	<td><%= file.updated_at %></td>
+	<td>
+		<% if @can_update %>
+		<%= link_to image_tag('edit.png'), edit_folder_file_path(current.folder, file), :title => 'Rename this file' %>
+		<% end %>
+	</td>
+	<td>
+		<% if @can_delete %>
+		<%= link_to image_tag('delete.png'), folder_file_path(current.folder, file), :method => :delete, :title => 'Delete this file', :confirm => 'Are you sure?' %>
+		<% end %>
+	</td>
+	<td>
+		<% if file.indexed %>
+		<%= link_to image_tag('zoom.png'), preview_folder_file_path(current.folder, file), :title => 'Preview', :class => 'noBackground' %>
+		<% end %>
+	</td>
+</tr>

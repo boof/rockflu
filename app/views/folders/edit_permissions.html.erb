@@ -1,0 +1,38 @@
+<% if current.user.is_admin? %>
+<div id="folder_rights"><div>
+	<% form_tag update_permissions_folder_path(current.folder), :method => :put do %>
+	<table>
+		<tr>
+			<th></th>
+			<th></th>
+			<th class="rights">Create</th>
+			<th class="rights">Read</th>
+			<th class="rights">Update</th>
+			<th class="rights">Delete</th>
+		</tr>
+		<% Group.find(:all, :order => 'name').each do |group| %>
+		<tr class="<%= cycle('even', 'odd') %>">
+			<% disabled = group.is_the_administrators_group? %>
+			<% if disabled %>
+			<td><%= image_tag('group_grey.png') %></td>
+			<td style="color:#818181;"><%= h(group.name) %></td>
+			<% else %>
+			<td><%= image_tag('group.png') %></td>
+			<td><%= h(group.name) %></td>
+			<% end %>
+			<td class="rights"><%= CRUD_check_box('create', group.id, controller.folder_id, disabled) %></td>
+			<td class="rights"><%= CRUD_check_box('read', group.id, controller.folder_id, disabled) %></td>
+			<td class="rights"><%= CRUD_check_box('update', group.id, controller.folder_id, disabled) %></td>
+			<td class="rights"><%= CRUD_check_box('delete', group.id, controller.folder_id, disabled) %></td>
+		</tr>
+		<% end %>
+	</table>
+	<div>
+		<%= check_box('update_recursively', 'checked', {}, 'yes', 'no') %> Apply changes to subfolders
+	</div>
+	<br / >
+	<%= submit_tag 'Save' %>
+	<%= link_to 'Back', folder_path(folder_id) %>
+	<% end %>
+</div></div>
+<% end %>
