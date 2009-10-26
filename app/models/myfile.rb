@@ -5,7 +5,7 @@ require 'zip/zipfilesystem'
 # Files are in (belong to) a folder and are uploaded by (belong to) a User.
 class Myfile < ActiveRecord::Base
   set_table_name :files
-  acts_as_ferret :store_class_name => true, :fields => { :text => { :store => :yes }, :filename => { :store => :no } }
+#  acts_as_ferret :store_class_name => true, :fields => { :text => { :store => :yes }, :filename => { :store => :no } }
 
   belongs_to :folder
   belongs_to :user
