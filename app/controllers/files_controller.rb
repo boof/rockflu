@@ -26,10 +26,12 @@ class FilesController < ApplicationController
     usage = Usage.new
     usage.download_date_time = Time.now
     usage.user = @logged_in_user
-    usage.myfile = @myfile
+    usage.myfile = @file
 
     if usage.save
-      send_file @myfile.path, :filename => @myfile.filename
+      send_file @file.path,
+          :filename => @file.filename,
+          :x_sendfile => Rockflu['x_sendfile']
     end
   end
 
@@ -45,7 +47,7 @@ class FilesController < ApplicationController
   # Shows the form where a user can select a new file to upload.
   def new
     @file = Myfile.new
-    render :template => 'files/upload_with_progress' if USE_UPLOAD_PROGRESS
+    render :template => 'files/new_with_progress' if Rockflu['upload_progress']
   end
 
   # Upload the file and create a record in the database.
@@ -58,19 +60,12 @@ class FilesController < ApplicationController
     # FIXME: triple check for upload progress, let this do a module presenting a state
 
     # change the filename if it already exists
-    if USE_UPLOAD_PROGRESS and !Myfile.find_by_filename_and_folder_id(@file.filename, current.folder.id).blank?
+    if Rockflu['upload_progress'] and !Myfile.find_by_filename_and_folder_id(@file.filename, current.folder.id).blank?
       @file.filename = "#{ @file.filename } (#{ Time.now.strftime '%Y%m%d%H%M%S' })"
     end
 
     if @file.save
-      if USE_UPLOAD_PROGRESS
-        return_url = folder_path(current.folder)
-        render :text => %(<script type="text/javascript">window.parent.UploadProgress.finish('#{return_url}');</script>)
-      else
-        redirect_to folder_path(current.folder)
-      end
-    elsif USE_UPLOAD_PROGRESS
-      render :template =>'file/upload_with_progress' 
+      redirect_to folder_path(current.folder)
     else
       render :new
     end
@@ -89,34 +84,31 @@ class FilesController < ApplicationController
 
   # Show a form with the current name of the file in a text field.
   def edit
-    render
   end
 
   # Update the name of the file with the new data.
   def update
-    if request.post?
-      if @myfile.update_attributes(:filename => Myfile.base_part_of(params[:myfile][:filename]), :date_modified => Time.now)
-        redirect_to :controller => 'folder', :action => :list, :id => folder_id
-      else
-        render_action 'rename'
-      end
+    if @file.update_attributes(:filename => Myfile.base_part_of(params[:myfile][:filename]))
+      redirect_to folder_path(current.folder)
+    else
+      render :edit
     end
   end
 
   # Preview file; possibly with highlighted search words.
   def preview
-    if @myfile.indexed
+    if @file.indexed
       if params[:search].blank? # normal case
-        @text = @myfile.text
+        @text = @file.text
       else # if we come from the search results page
-        @text = @myfile.highlight(params[:search], { :field => :text, :excerpt_length => :all, :pre_tag => '[h]', :post_tag => '[/h]' })
+        @text = @file.highlight(params[:search], { :field => :text, :excerpt_length => :all, :pre_tag => '[h]', :post_tag => '[/h]' })
       end
     end
   end
 
   # Delete a file.
   def destroy
-    @myfile.destroy
+    @file.destroy
     redirect_to folder_path(current.folder)
   end
 
@@ -126,7 +118,7 @@ class FilesController < ApplicationController
     # Check if a file exists before executing an action.
     # If it doesn't exist: redirect to 'list' and show an error message
     def assign_file
-      @myfile = Myfile.find params[:id]
+      @file = Myfile.find params[:id]
     rescue
       flash.now[:folder_error] = 'Someone else deleted the file you are using. Your action was cancelled and you have been taken back to the parent folder.'
       redirect_to folder_path(current.folder)

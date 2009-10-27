@@ -1,0 +1,138 @@
+#player_container {
+    color: white;
+	position: relative;
+	left: 165px;
+	width:418px;
+	height:64px;
+}
+#player_container  ul#player_controls {
+	list-style-type:none;
+	padding:0;
+	margin: 0;
+}
+#player_container  ul#player_controls li {
+	overflow:hidden;
+	text-indent:-9999px;
+}
+#player_play,
+#player_pause {
+	display: block;
+	position: absolute;
+	left:16px;
+	top:8px;
+	width:16px;
+	height:16px;
+	cursor: pointer;
+}
+#player_play {
+	background: url("/images/media-playback-start.png") no-repeat;
+}
+#player_play.different_prefix_example_hover {
+	background: url("/images/media-playback-start.png") no-repeat;
+}
+#player_pause {
+	background: url("/images/media-playback-pause.png") no-repeat;
+}
+#player_pause.different_prefix_example_hover {
+	background: url("/images/media-playback-pause.png") no-repeat;
+}
+#player_progress {
+	position: absolute;
+	left:48px;
+	top:8px;
+    /*background-color: #eee;*/
+	width:122px;
+	height:15px;
+}
+#player_progress_load_bar {
+	background: url("http://www.happyworm.com/jquery/jplayer/0.2.5/images/bar_load.gif")  top left repeat-x;
+	width:0px;
+	height:15px;
+	cursor: pointer;
+}
+#player_progress_load_bar.different_prefix_example_buffer {
+	background: url("http://www.happyworm.com/jquery/jplayer/0.2.5/images/bar_buffer.gif")  top left repeat-x;
+}
+#player_progress_play_bar {
+	background: url("http://www.happyworm.com/jquery/jplayer/0.2.5/images/bar_play.gif") top left repeat-x ;
+	width:0px;
+	height:15px;
+}
+#player_volume_min {
+	position: absolute;
+	left:192px;
+	top:8px;
+	background: url("/images/audio-volume-low.png") no-repeat;
+	width:16px;
+	height:16px;
+	cursor: pointer;
+}
+
+#player_volume_max {
+	position: absolute;
+	left:264px;
+	top:8px;
+	background: url("/images/audio-volume-high.png") no-repeat;
+	width:16px;
+	height:16px;
+	cursor: pointer;
+}
+
+#player_volume_min.different_prefix_example_hover {
+	background: url("/images/audio-volume-low.png") no-repeat;
+}
+
+#player_volume_max.different_prefix_example_hover {
+	background: url("/images/audio-volume-high.png") no-repeat;
+}
+
+#player_volume_bar {
+	position: absolute;
+	left:212px;
+	top:13px;
+	background: url("http://www.happyworm.com/jquery/jplayer/0.2.5/images/volume_bar.gif") repeat-x top left;
+	width:46px;
+	height:5px;
+	cursor: pointer;
+}
+#player_volume_bar_value {
+	background: url("http://www.happyworm.com/jquery/jplayer/0.2.5/images/volume_bar_value.gif") repeat-x top left;
+	width:0px;
+	height:5px;
+}
+
+#player_playlist_message {
+	position: absolute;
+	left:0;
+	bottom:0;
+	width:338px;
+	padding:5px 40px 10px 40px;
+	font-family: Arial, Helvetica, sans-serif;
+	line-height:1.4em;
+	height:1em;
+	/*background-color:#ccc;*/
+}
+
+#song_title {
+	float:left;
+	margin:0 5px 0 0;
+	padding:0;
+	font-weight:bold;
+}
+
+#play_time,
+#total_time {
+	padding-top:.3em;
+	font-weight:normal;
+	font-style:oblique;
+	font-size:.7em;
+}
+
+#play_time {
+	float:left;
+}
+
+#total_time {
+	float:right;
+	text-align: right;
+}

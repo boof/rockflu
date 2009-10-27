@@ -1,0 +1,16 @@
+#uploading {
+	color: white;
+}
+#uploading .bar {
+	width: 100%;
+}
+
+#uploading #progress {
+	background: #001831;
+	margin-top: 20px;
+}
+#uploading #progressbar {
+	width: 0px;
+	height: 24px;
+	background: white;
+}

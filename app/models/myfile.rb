@@ -22,11 +22,11 @@ class Myfile < ActiveRecord::Base
   end
 
   def date_modified
-    logger.warn "date_modified is deprecated, please use updated_at (#{ caller.at -2 })"
+    logger.warn "date_modified is deprecated, please use updated_at"
     updated_at
   end
   def date_modified=(value)
-    logger.warn "date_modified is deprecated, please use updated_at (#{ caller.at -2 })"
+    logger.warn "date_modified= is deprecated, please use updated_at="
     self.updated_at = value
   end
 
@@ -44,6 +44,7 @@ class Myfile < ActiveRecord::Base
       @date_time_created = Time.now.to_f
 
       # Save the file on the file system
+      # FIXME: too slow for big files...
       File.open(self.temp_path, 'wb') do |f|
         while buff = myfile_field.read(4096)
           f.write(buff)
@@ -65,36 +66,6 @@ class Myfile < ActiveRecord::Base
           Zip::ZipFile.open(self.temp_path) do |zipfile|
             text_in_file = zipfile.file.open('content.xml') { |f| f.read.gsub(/<.*?>/, ' ') }
           end
-      end
-
-      # If it didn't get caught yet, try the helpers
-      if text_in_file.blank?
-        INDEX_HELPERS.each do |index_helper| # defined in environment.rb
-          if filename =~ index_helper[:ext] # a matching helper!   
-
-            if index_helper[:file_output] # a file that writes to an output file
-              `#{ sprintf(index_helper[:helper], self.temp_path, self.temp_path + '_copy') }`
-              text_in_file = File.open(self.temp_path + '_copy') { |f| f.read }
-              File.delete(self.temp_path + '_copy')
-            else # we get the contents from stido directly
-              text_in_file = `#{ sprintf(index_helper[:helper], self.temp_path) }`
-            end
-
-            # Check if we need to remove first part (e.g. unrtf)
-            unless index_helper[:remove_before].blank?
-              if index_helper[:remove_before].match(text_in_file)
-                text_in_file = Regexp::last_match.post_match 
-              end
-            end
-
-            # Check if we need to remove last part
-            unless index_helper[:remove_after].blank?
-              if index_helper[:remove_after].match(text_in_file)
-                text_in_file = Regexp::last_match.pre_match
-              end
-            end
-          end
-        end
       end
 
       unless text_in_file.blank?
@@ -150,11 +121,11 @@ class Myfile < ActiveRecord::Base
 
   # Returns the location of the file before it's saved
   def temp_path
-    "#{UPLOAD_PATH}/#{@date_time_created}"
+    "#{ Rockflu['upload_path'] }/#{ @date_time_created }"
   end
 
   # The path of the file
   def path
-    "#{UPLOAD_PATH}/#{self.id}"
+    "#{ Rockflu['upload_path'] }/#{ id }"
   end
 end

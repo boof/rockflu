@@ -71,7 +71,8 @@ function UncheckCreateUpdateDelete(checked, group)
     }
 }
 
-// By using this function onclick of the Create, Update and Delete checkbox,
+// By using this function onclick of the Create, Update and Delete checkbox,
+
 // you make sure that if Create, Update and Delete is allowed, Reading is allowed too.
 function CheckRead(checked, group)
 {
@@ -103,7 +104,8 @@ var UploadProgress = {
     var statusHTML = status.toPercentage();
     $('results').innerHTML   = statusHTML + "<br /><small>" + current.toHumanSize() + ' of ' + total.toHumanSize() + " uploaded.</small>";
     this.StatusBar.update(status, statusHTML);
-  },
+  },
+
   
   finish: function(return_url) {
     this.uploading = false;
@@ -171,7 +173,7 @@ Number.prototype.gigabytes = function() { return this * (1024).megabytes(); };
 Number.prototype.terabytes = function() { return this * (1024).gigabytes(); };
 Number.prototype.petabytes = function() { return this * (1024).terabytes(); };
 Number.prototype.exabytes =  function() { return this * (1024).petabytes(); };
-['byte', 'kilobyte', 'megabyte', 'gigabyte', 'terabyte', 'petabyte', 'exabyte'].each(function(meth) {
+$(['byte', 'kilobyte', 'megabyte', 'gigabyte', 'terabyte', 'petabyte', 'exabyte']).each(function(meth) {
   Number.prototype[meth] = Number.prototype[meth+'s'];
 });
 

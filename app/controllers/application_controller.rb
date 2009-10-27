@@ -10,7 +10,7 @@ class ApplicationController < ActionController::Base; protected
       @user ||= controller.instance_variable_get :@logged_in_user
     end
     def file
-      @file ||= controller.instance_variable_get :@myfile
+      @file ||= controller.instance_variable_get :@file
     end
 
     protected
