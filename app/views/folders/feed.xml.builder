@@ -25,7 +25,7 @@ if @authorized
         @files.each do |file|
           xml.item do
             xml.title 'File: ' + h(file.filename)
-            xml.link folder_path(file.folder, :only_path => false)
+            xml.link folder_file_path(file.folder, file, :only_path => false)
             xml.description h(file.filename) + ' is a file in ' + path(file.folder, true, :only_path => false)
             xml.pubDate CGI.rfc1123_date(file.date_modified)
             xml.guid url_for(:only_path => false, :controller => 'file', :action => :download, :id => file.id)
