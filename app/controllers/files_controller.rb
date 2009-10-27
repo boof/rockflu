@@ -53,15 +53,8 @@ class FilesController < ApplicationController
   # Upload the file and create a record in the database.
   # The file will be stored in the 'current' folder.
   def create
-    @file = Myfile.new(params[:myfile])
-    @file.folder_id = folder_id
-    @file.user = current.user
-
-    # FIXME: triple check for upload progress, let this do a module presenting a state
-
-    # change the filename if it already exists
-    if Rockflu['upload_progress'] and !Myfile.find_by_filename_and_folder_id(@file.filename, current.folder.id).blank?
-      @file.filename = "#{ @file.filename } (#{ Time.now.strftime '%Y%m%d%H%M%S' })"
+    @file = current.folder.myfiles.new params[:myfile] do |file|
+      file.user = current.user
     end
 
     if @file.save
