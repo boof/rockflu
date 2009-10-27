@@ -22,7 +22,7 @@ if @authorized
         end
 
         # List the files:
-        @myfiles.each do |file|
+        @files.each do |file|
           xml.item do
             xml.title 'File: ' + h(file.filename)
             xml.link folder_path(file.folder, :only_path => false)
