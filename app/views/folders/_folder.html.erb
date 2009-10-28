@@ -10,7 +10,7 @@
 	</td>
 	<td>
 		<% if @can_delete %>
-		<%= link_to image_tag('delete.png'), folder_path(folder), :method => :delete, :title => 'Delete this folder', :confirm => "All files and subfolders will be deleted!\nAre you sure?", :class => 'noBackground' %>
+		<%= link_to image_tag('delete.png'), folder_path(folder), :method => :delete, :title => 'Delete this folder', :confirm => "Are you sure?", :class => 'noBackground' %>
 		<% end %>
 	</td>
 	<td></td>
