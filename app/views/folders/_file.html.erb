@@ -1,14 +1,14 @@
 <tr class="<%= cycle('even', 'odd') %>">
 	<td>
-		<% if File.extname(file.filename) == '.mp3' %>
-		<%= link_to image_tag('media-playback-start.png'), folder_file_path(current.folder, file), :title => file.filename, :class => 'noBackground playButton' %>
+		<% if file.extname == '.mp3' %>
+		<%= link_to image_tag('media-playback-start.png'), folder_file_path(current.folder, file), :title => file.name, :class => 'noBackground playButton' %>
 		<% else %>
 		<%= image_tag 'file.png' %>
 		<% end %>
 	</td>
-	<td><%= link_to h(file.filename), folder_file_path(current.folder, file) %></td>
-	<td><span class="unit"><%= file.filesize %> bytes</span></td>
-	<td><%= file.updated_at %></td>
+	<td><%= link_to h(file.name), folder_file_path(current.folder, file) %></td>
+	<td><span class="unit"><%= file.size %> bytes</span></td>
+	<td class="time"><%= file.updated_at.iso8601 %></td>
 	<td>
 		<% if @can_update %>
 		<%= link_to image_tag('edit.png'), edit_folder_file_path(current.folder, file), :title => 'Rename this file', :class => 'noBackground' %>

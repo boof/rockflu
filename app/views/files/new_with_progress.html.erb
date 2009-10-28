@@ -1,13 +1,15 @@
-<p class="title">Upload File</p>
+<p class="title">
+	<%= path(current.folder, false) %>
+	&nbsp;
+	<span class="small">Upload File</span>
+</p>
+
+<p><%= myfile_to_file error_messages_for('file') %></p>
 
 <% form_for :file, @file, :url => folder_files_path(current.folder), :html => {:multipart => true} do |form| %>
-<%= form.label :source, 'File' %><br />
-<%= form.file_field :source %><br />
-<br />
-<%= submit_tag 'Start Upload', :class => 'activatesUploadProgress' %>
+<%= form.file_field :source %>
+<%= submit_tag 'Upload', :class => 'activatesUploadProgress' %>
 <% end %>
-
-<%= link_to 'Back', folder_path(current.folder) %>
 
 <script type="text/javascript">
 $(function() {

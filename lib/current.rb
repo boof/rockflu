@@ -2,8 +2,10 @@ Current = Struct.new :controller do
 
   def folder_id
     case "#{ params[:controller].pluralize }/#{ params[:action] }"
-        when 'folders/show', 'folders/new', 'folders/create', 'folders/edit_permissions', 'folders/update_permissions', 'folders/feed', 'files/validate_filename', 'folders/edit', 'folders/update', 'folders/destroy'
+        when 'folders/show', 'folders/edit_permissions', 'folders/update_permissions', 'folders/feed', 'folders/edit', 'folders/update', 'folders/destroy'
           params[:id] || 1
+        when 'folders/new', 'folders/create'
+          params[:parent_id] || 1
         when 'files/create', 'files/new', 'files/show', 'files/edit', 'files/update', 'files/destroy', 'files/preview'
           params[:folder_id] || 1
         end

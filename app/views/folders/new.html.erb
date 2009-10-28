@@ -1,8 +1,14 @@
-<p class="title">New folder</p>
+<p class="title">
+	<%= path(current.folder, false) %>
+	&nbsp;
+	<span class="small">Create Folder</span>
+</p>
+
+<p><%= error_messages_for :folder %></p>
 
 <% form_for @folder do |form| %>
-<%= render form %>
-<%= submit_tag 'Create' %>
-<% end %>
+	<%= hidden_field_tag :parent_id, params[:parent_id] %>
 
-<%= link_to 'Back', folder_path(current.folder) %>
+	<%= form.text_field :name, :class => 'focused' %>
+	<%= submit_tag 'Create' %>
+<% end %>

@@ -9,9 +9,14 @@
 	<%= stylesheet_link_tag 'boxroom', 'progress' %>
 	<%= javascript_include_tag 'jquery-1.3.2.min', 'application' %>
 	<%= javascript_include_tag 'jquery.uploadProgress' if Rockflu['upload_progress'] %>
+	<script type="text/javascript" charset="utf-8">
+		$(function() {
+			$('.focused').select();
+		});
+	</script>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
 </head>
 <body id="filesLayout">
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
 	<div id="chromeFrame"></div>
 	<script>
 	CFInstall.check({
@@ -27,7 +32,6 @@
 			</div>
 
 			<div class="search">
-				<%= render :partial=>'shared/search_form' %>
 			</div>
 		</div>
 

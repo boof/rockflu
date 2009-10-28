@@ -15,7 +15,7 @@ module ApplicationHelper
       link_to h(text), folder_path(folder, opts)
     else
       [ folder, *folder.ancestors ].reverse.
-          map { |folder| link_to h(folder.name), folder_path(folder.id, opts) } * ' &#187; '
+          map { |folder| link_to h(folder.name), folder_path(folder.id, opts) } * ' &middot; '
     end
   end
 end

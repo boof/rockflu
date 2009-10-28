@@ -1,21 +1,25 @@
-class Rockflu::File < ActiveRecord::Base
+class Upload < ActiveRecord::Base
   set_table_name :files
 
-  belongs_to :folder
+  belongs_to :folder, :touch => true, :counter_cache => :size
   belongs_to :user
 
   has_many :usages, :dependent => :destroy
 
-  validates_presence_of :filename, :blank => false
-  validates_uniqueness_of :filename, :scope => 'folder_id'
-  validates_numericality_of :filesize, :greater_than => 0
+  validates_presence_of :name, :blank => false
+  validates_uniqueness_of :name, :scope => 'folder_id'
+  validates_numericality_of :size, :greater_than => 0
 
   def source=(tempfile)
     raise ArgumentError unless tempfile
 
     self.temporary_path = tempfile.path
-    self.filesize = tempfile.size
-    self.filename = tempfile.original_filename
+    self.size = tempfile.size
+    self.name = tempfile.original_filename
+  end
+
+  def extname
+    File.extname name
   end
 
   def absolute_path
@@ -41,7 +45,7 @@ class Rockflu::File < ActiveRecord::Base
 
     # Strips path portion of filename.
     def basenamify
-      self.filename = File.basename filename.gsub('\\\\', '/')
+      self.name = File.basename name.gsub('\\\\', '/')
     end
     before_save :basenamify
 

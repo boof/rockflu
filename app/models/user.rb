@@ -11,7 +11,7 @@ class User < ActiveRecord::Base
     GroupPermissions.for_user self
   end
   has_many :usages, :dependent => :destroy
-  has_many :files, :class_name => 'Rockflu::File', :dependent => :nullify
+  has_many :files, :class_name => 'Upload', :dependent => :nullify
   has_many :folders, :dependent => :nullify
 
   attr_accessor :password_required

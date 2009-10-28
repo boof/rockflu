@@ -9,19 +9,19 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20091025205242) do
+ActiveRecord::Schema.define(:version => 20091028225041) do
 
   create_table "files", :force => true do |t|
-    t.string   "filename"
-    t.integer  "filesize"
+    t.string   "name"
+    t.integer  "size"
     t.integer  "folder_id",  :default => 0
     t.integer  "user_id",    :default => 0
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "files", ["filename"], :name => "index_files_on_filename"
   add_index "files", ["folder_id"], :name => "index_files_on_folder_id"
+  add_index "files", ["name"], :name => "index_files_on_filename"
   add_index "files", ["user_id"], :name => "index_files_on_user_id"
 
   create_table "folders", :force => true do |t|
@@ -31,6 +31,7 @@ ActiveRecord::Schema.define(:version => 20091025205242) do
     t.boolean  "root",       :default => false
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "size",       :default => 0
   end
 
   add_index "folders", ["name"], :name => "index_folders_on_name"
@@ -70,12 +71,12 @@ ActiveRecord::Schema.define(:version => 20091025205242) do
   add_index "groups_users", ["group_id", "user_id"], :name => "index_groups_users_on_group_id_and_user_id"
 
   create_table "usages", :force => true do |t|
-    t.integer  "file_id",    :default => 0
+    t.integer  "upload_id",  :default => 0
     t.integer  "user_id",    :default => 0
     t.datetime "created_at"
   end
 
-  add_index "usages", ["file_id"], :name => "index_usages_on_file_id"
+  add_index "usages", ["upload_id"], :name => "index_usages_on_file_id"
   add_index "usages", ["user_id"], :name => "index_usages_on_user_id"
 
   create_table "users", :force => true do |t|

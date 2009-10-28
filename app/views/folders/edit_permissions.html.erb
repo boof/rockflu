@@ -1,7 +1,12 @@
-<% if current.user.immortal? %>
+<p class="title">
+	<%= path(current.folder, false) %>
+	&nbsp;
+	<span class="small">Permissions</span>
+</p>
+
 <div id="folder_rights"><div>
 	<% form_tag update_permissions_folder_path(current.folder), :method => :put do %>
-	<table>
+	<table class="grid">
 		<tr>
 			<th></th>
 			<th></th>
@@ -14,36 +19,24 @@
 		<% perms = @permissions.fetch grp.id, @no_permission %>
 		<tr class="<%= cycle('even', 'odd') %>">
 			<td><%= image_tag('group.png') %></td>
-			<td><%= h(grp.name) %></td>
+			<td class="large"><%= h grp.name %></td>
 			<td class="rights">
-				<%= check_box 'create_check_box', grp.id,
-					:checked => perms.can_create?,
-					:onclick => "CheckRead(this.checked, #{ grp.id })" %>
+				<%= check_box_tag "permissions[#{ grp.id }][c]", 1, perms.can_create?, :onclick => "CheckRead(this.checked, #{ grp.id })" %>
 			</td>
 			<td class="rights">
-				<%= check_box 'read_check_box', grp.id,
-					:checked => perms.can_read?,
-					:onclick => "UncheckCreateUpdateDelete(this.checked, #{ grp.id })" %>
+				<%= check_box_tag "permissions[#{ grp.id }][r]", 1, perms.can_read?, :onclick => "UncheckCreateUpdateDelete(this.checked, #{ grp.id })" %>
 			</td>
 			<td class="rights">
-				<%= check_box 'update_check_box', grp.id,
-					:checked => perms.can_update?,
-					:onclick => "CheckRead(this.checked, #{ grp.id })" %>
+				<%= check_box_tag "permissions[#{ grp.id }][u]", 1, perms.can_update?, :onclick => "CheckRead(this.checked, #{ grp.id })" %>
 			</td>
 			<td class="rights">
-				<%= check_box 'delete_check_box', grp.id,
-					:checked => perms.can_delete?,
-					:onclick => "CheckRead(this.checked, #{ grp.id })" %>
+				<%= check_box_tag "permissions[#{ grp.id }][d]", 1, perms.can_delete?, :onclick => "CheckRead(this.checked, #{ grp.id })" %>
 			</td>
 		</tr>
 		<% end %>
 	</table>
-	<div>
-		<%= check_box 'update_recursively', 'checked', {}, 'yes', 'no' %> Apply changes to subfolders
-	</div>
-	<br / >
-	<%= submit_tag 'Save' %>
-	<%= link_to 'Back', folder_path(folder_id) %>
+	<br />
+	<%= submit_tag 'Save' %>&nbsp;
+	<%= submit_tag 'Save Recursive', :name => 'recursive', :onclick => '' %>
 	<% end %>
 </div></div>
-<% end %>

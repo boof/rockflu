@@ -1,7 +1,7 @@
 --- !ruby/object:Gem::Specification 
 name: xbel
 version: !ruby/object:Gem::Version 
-  version: 0.1.0
+  version: 0.1.2
 platform: ruby
 authors: 
 - "Florian A\xC3\x9Fmann"
@@ -50,19 +50,28 @@ extensions: []
 
 extra_rdoc_files: 
 - LICENSE
-- README.rdoc
+- README.markdown
 files: 
 - .document
 - .gitignore
+- .watchr
 - LICENSE
-- README.rdoc
+- README.markdown
 - Rakefile
 - VERSION
+- lib/nokogiri/decorators/xbel.rb
+- lib/nokogiri/decorators/xbel/alias.rb
+- lib/nokogiri/decorators/xbel/bookmark.rb
+- lib/nokogiri/decorators/xbel/folder.rb
+- lib/nokogiri/decorators/xbel/seperator.rb
 - lib/xbel.rb
+- lib/xbel/writer.rb
+- test/complex.xbel
 - test/helper.rb
 - test/test_xbel.rb
+- xbel.gemspec
 has_rdoc: true
-homepage: http://github.com/boof/xbel
+homepage: http://xbel.monkey-patch.me
 licenses: []
 
 post_install_message: 

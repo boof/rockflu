@@ -61,24 +61,24 @@ function ShowList()
 // Create, Update and Delete is only possible when Reading is allowed too.
 // By using this function onclick of the Read checkbox, you make sure that if
 // Reading is not allowed Create, Update and Delete is not allow either.
-function UncheckCreateUpdateDelete(checked, group)
+function UncheckCreateUpdateDelete(checked, gid)
 {
     if(!checked)
     {
-        eval("document.getElementById('create_check_box_" + group + "').checked = false");
-        eval("document.getElementById('update_check_box_" + group + "').checked = false");
-        eval("document.getElementById('delete_check_box_" + group + "').checked = false");
+        eval("document.getElementById('permissions_" + gid + "_c').checked = false");
+        eval("document.getElementById('permissions_" + gid + "_u').checked = false");
+        eval("document.getElementById('permissions_" + gid + "_d').checked = false");
     }
 }
 
 // By using this function onclick of the Create, Update and Delete checkbox,
 
 // you make sure that if Create, Update and Delete is allowed, Reading is allowed too.
-function CheckRead(checked, group)
+function CheckRead(checked, gid)
 {
     if(checked)
     {
-        eval("document.getElementById('read_check_box_" + group + "').checked = true");
+        eval("document.getElementById('permissions_" + gid + "_r').checked = true");
     }
 }
 

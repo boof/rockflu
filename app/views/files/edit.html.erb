@@ -1,11 +1,12 @@
-<p class="title">Rename File</p>
+<p class="title">
+	<%= path(current.folder, false) %>
+	&nbsp;
+	<span class="small">Rename File</span>
+</p>
+
+<p><%= myfile_to_file error_messages_for('file') %></p>
 
 <% form_for :file, @file, :url => folder_file_path(current.folder, @file), :html => {:method => :put} do |form| %>
-<%= myfile_to_file(error_messages_for('myfile')) %>
-<%= form.label :filename %><br />
-<%= form.text_field 'filename' %><br />
-<br />
+<%= form.text_field :name, :class => 'focused' %>
 <%= submit_tag 'Rename' %>
 <% end %>
-
-<%= link_to 'Back', folder_path(current.folder) %>

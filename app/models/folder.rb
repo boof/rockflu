@@ -1,8 +1,8 @@
 class Folder < ActiveRecord::Base
-  acts_as_tree :order => 'name'
+  acts_as_tree :order => 'name', :counter_cache => :size
 
   belongs_to :user
-  has_many :files, :class_name => 'Rockflu::File', :dependent => :destroy
+  has_many :files, :class_name => 'Upload', :dependent => :destroy
   has_many :group_permissions, :class_name => 'GroupPermissions', :dependent => :destroy
 
   validates_uniqueness_of :name, :scope => 'parent_id'
@@ -13,9 +13,12 @@ class Folder < ActiveRecord::Base
   attr_accessible :name
   def to_s; name end
 
-  def list(user, folder_order, file_order)
-    return unless user.can_read? id
-    return children.all(:order => folder_order), files.all(:order => file_order)
+  def list(by = 'name', dir = 'ASC')
+    by = 'name' unless self.class.column_names.include? by
+    dir = 'ASC' unless %w[ ASC DESC ].include? dir
+    order = "#{ by } #{ dir }"
+
+    return children.all(:order => order), files.all(:order => order)
   end
   alias_method :ls, :list
 
@@ -43,9 +46,9 @@ class Folder < ActiveRecord::Base
     end
     before_create :inherit_permissions
 
-    def rm_path
-      FileUtils.rm_r absolute_path
+    def rm_r
+      FileUtils.rm_r absolute_path if File.directory? absolute_path
     end
-    after_destroy :rm_path
+    after_destroy :rm_r
 
 end

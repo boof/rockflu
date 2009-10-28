@@ -1,8 +1,14 @@
-<p class="title">Rename folder</p>
+<p class="title">
+	<%= path(current.folder, false) %>
+	&nbsp;
+	<span class="small">Rename Folder</span>
+</p>
+
+<p><%= error_messages_for :folder %></p>
 
 <% form_for current.folder do |form| %>
-<%= render form %>
+<%= hidden_field_tag :parent_id, @folder.parent_id %>
+
+<%= form.text_field :name, :class => 'focused' %>
 <%= submit_tag 'Rename' %>
 <% end %>
-
-<%= link_to 'Back', folder_path(current.folder.parent) %>

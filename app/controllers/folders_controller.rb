@@ -19,27 +19,10 @@ class FoldersController < ApplicationController
 
   # List the files and sub-folders in a folder.
   def show
-    # Get the folder
     @folder = Folder.find_by_id params[:id]
-
-    # Set if the user is allowed to update or delete in this folder;
-    # these instance variables are used in the view.
     @can_update = current.user.can_update? @folder.id
     @can_delete = current.user.can_delete? @folder.id
-
-    # determine the order in which files are shown
-    file_order = 'filename '
-    file_order = params[:order_by].sub('name', 'filename') + ' ' if params[:order_by]
-    file_order += params[:order] if params[:order]
-
-    # determine the order in which folders are shown
-    folder_order = 'name '
-    if params[:order_by] and params[:order_by] != 'filesize'
-      folder_order = params[:order_by] + ' '
-      folder_order += params[:order] if params[:order]
-    end
-
-    @folders, @files = @folder.list current.user, folder_order.rstrip, file_order.rstrip
+    @folders, @files = @folder.list params[:order_by], params[:order]
   end
 
   def feed
@@ -47,10 +30,11 @@ class FoldersController < ApplicationController
     return render(:nothing => true, :status => 401) unless user
 
     @folder = Folder.find params[:id]
-    if !@folder
+
+    if not @folder
       render :xml => render_to_string(:no_feed)
     elsif user.can_read? params[:id] or @folder.root?
-      @folders, @files = @folder.list user, 'name', 'filename'
+      @folders, @files = @folder.list
       render :xml => render_to_string(:feed)
     else
       render :nothing => true, :status => 401
@@ -100,12 +84,10 @@ class FoldersController < ApplicationController
         inject({}) { |hash, perms| hash.update perms.group_id => perms }
   end
 
-  # Saved the new permissions given by the user
   def update_permissions
-    return unless current.user.administrator?
     folder_ids = []
 
-    if params[:update_recursively][:checked] == 'yes'
+    if params[:recursive]
       stack = [current.folder]
       until stack.empty?
         folder = stack.pop
@@ -118,22 +100,22 @@ class FoldersController < ApplicationController
 
     GroupPermissions.transaction do
       Group.unprivileged.each do |group|
-        id_str = group.id.to_s
-        can_create  = params[:create_check_box][id_str] == '1'
-        can_read    = params[:read_check_box][id_str] == '1'
-        can_update  = params[:update_check_box][id_str] == '1'
-        can_delete  = params[:delete_check_box][id_str] == '1'
+        c,r,u,d = params.
+            fetch('permissions', {}).
+            fetch("#{ group.id }", {}).
+            values_at(*%w[ c r u d ])
+
         conditions  = {
           :folder_id => folder_ids,
           :group_id => group.id
         }
 
-        if can_create || can_read || can_update || can_delete
+        if c || r || u || d
           permissions = {
-            :can_create => can_create,
-            :can_read   => can_read,
-            :can_update => can_update,
-            :can_delete => can_delete
+            :can_create => c,
+            :can_read   => r,
+            :can_update => u,
+            :can_delete => d
           }
           GroupPermissions.update_all permissions, conditions
 
