@@ -14,7 +14,7 @@ class GroupPermissions < ActiveRecord::Base
   named_scope :for_delete, :conditions => {:can_delete => true}
 
   def self.allow_crud(folder, group)
-    permissions = GroupPermission.new { |permissions|
+    permissions = new { |permissions|
       permissions.folder     = folder
       permissions.group      = group
       permissions.can_create = true
