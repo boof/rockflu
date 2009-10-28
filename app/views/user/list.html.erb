@@ -23,7 +23,7 @@
 		<td><%= h(user.name) %></td>
 		<td><%= h(user.email) %></td>
 		<td><%= link_to image_tag('edit.png'), { :action => :edit, :id => user }, { :title => "Edit this user's settings" } %></td>
-		<% if user.is_the_administrator? %>
+		<% if user.immortal? %>
 		<td></td>
 		<% else %>
 		<td><%= link_to image_tag('delete.png'), { :action => :destroy, :id => user }, { :title => 'Delete this user', :confirm => 'Are you sure?' } %></td>

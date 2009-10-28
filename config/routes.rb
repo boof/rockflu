@@ -7,6 +7,7 @@ ActionController::Routing::Routes.draw do |map|
     folders.resources :files, :member => {:preview => :get}
   end
   map.root :controller => 'folders', :action => 'show', :id => 1
+  map.connect '/progress', :controller => 'files', :action => 'progress'
 
   # This route helps determine if it's a folder or a file that is
   # being added/remove to/from the clipboard.

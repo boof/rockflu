@@ -9,6 +9,6 @@
 <%= submit_tag 'Save' %>
 <% end %>
 
-<% if @user != @logged_in_user %>
+<% if @user != current.user %>
 <%= link_to 'Back', :action => :list %>
 <% end %>

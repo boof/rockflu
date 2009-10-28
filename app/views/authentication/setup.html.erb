@@ -1,12 +1,6 @@
-<p class="title">Create admin</p>
+<p class="title">Setup Rockflu</p>
 
-<%= name_to_username(error_messages_for('user')) %>
-
-<p>
-	Boxroom does not have an administrator yet.<br/>
-	<br/>
-	Create it here:
-</p>
+<%= name_to_username error_messages_for('user') %>
 
 <% form_tag do %>
 <label for="user_name">Username</label><br />
@@ -25,5 +19,5 @@
 <%= password_field 'user', 'password_confirmation' %><br />
 <br />
 
-<%= submit_tag 'Create admin account' %>
+<%= submit_tag 'Complete' %>
 <% end %>

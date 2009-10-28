@@ -24,8 +24,8 @@ class FoldersController < ApplicationController
 
     # Set if the user is allowed to update or delete in this folder;
     # these instance variables are used in the view.
-    @can_update = current.user.can_update @folder.id
-    @can_delete = current.user.can_delete @folder.id
+    @can_update = current.user.can_update? @folder.id
+    @can_delete = current.user.can_delete? @folder.id
 
     # determine the order in which files are shown
     file_order = 'filename '
@@ -39,10 +39,7 @@ class FoldersController < ApplicationController
       folder_order += params[:order] if params[:order]
     end
 
-    # List of subfolders
-    @folders = @folder.list_subfolders(current.user, folder_order.rstrip)
-    # List of files in the folder
-    @files = @folder.list_files(current.user, file_order.rstrip)
+    @folders, @files = @folder.list current.user, folder_order.rstrip, file_order.rstrip
   end
 
   # Authorizes, sets the appropriate variables and headers.
@@ -85,11 +82,6 @@ class FoldersController < ApplicationController
     @folder.user = current.user
 
     if @folder.save
-      # TODO: move this to Folder.before_create
-      # copy groups rights on parent folder to new folder
-      copy_permissions_to_new_folder(@folder)
-
-      # back to the list
       redirect_to folder_path(@folder)
     else
       render :action => :new
@@ -109,121 +101,67 @@ class FoldersController < ApplicationController
   # Delete a folder.
   def destroy
     @folder.destroy
-    redirect_to folder_path(folder_id)
+    redirect_to folder_path(@folder.parent)
+  end
+
+  def edit_permissions
+    @groups = Group.find :all, :conditions => ['administrators = ?', false]
+    @no_permission = GroupPermissions.new
+    @permissions = GroupPermissions.find_all_by_folder_id(folder_id).
+        inject({}) { |hash, perms| hash.update perms.group_id => perms }
   end
 
   # Saved the new permissions given by the user
   def update_permissions
-    if current.user.is_admin?
-      update_group_permissions(folder_id, params[:create_check_box], 'create', params[:update_recursively][:checked] == 'yes' ? true : false)
-      update_group_permissions(folder_id, params[:read_check_box], 'read', params[:update_recursively][:checked] == 'yes' ? true : false)
-      update_group_permissions(folder_id, params[:update_check_box], 'update', params[:update_recursively][:checked] == 'yes' ? true : false)
-      update_group_permissions(folder_id, params[:delete_check_box], 'delete', params[:update_recursively][:checked] == 'yes' ? true : false)
+    return unless current.user.administrator?
+    folder_ids = []
+
+    if params[:update_recursively][:checked] == 'yes'
+      stack = [current.folder]
+      until stack.empty?
+        folder = stack.pop
+        stack.concat folder.children
+        folder_ids << folder.id
+      end
+    else
+      folder_ids << current.folder.id
     end
 
+    GroupPermissions.transaction do
+      Group.unprivileged.each do |group|
+        id_str = group.id.to_s
+        can_create  = params[:create_check_box][id_str] == '1'
+        can_read    = params[:read_check_box][id_str] == '1'
+        can_update  = params[:update_check_box][id_str] == '1'
+        can_delete  = params[:delete_check_box][id_str] == '1'
+        conditions  = {
+          :folder_id => folder_ids,
+          :group_id => group.id
+        }
+
+        if can_create || can_read || can_update || can_delete
+          permissions = {
+            :can_create => can_create,
+            :can_read   => can_read,
+            :can_update => can_update,
+            :can_delete => can_delete
+          }
+          GroupPermissions.update_all permissions, conditions
+
+          existing = GroupPermissions.find :all,
+              :select => :folder_id, :conditions => conditions
+          missing = folder_ids - existing.map { |perm| perm.folder_id }
+          missing.all? { |folder_id|
+            attributes = permissions.merge :folder_id => folder_id
+            group.permissions.new(attributes).save
+          } or raise ActiveRecord::Rollback
+        else
+          GroupPermissions.delete_all conditions
+        end
+      end
+    end
+  ensure
     redirect_to folder_path(folder_id)
   end
 
-  # These methods are private:
-  # [#update_group_permissions]        Update the group folder permissions
-  # [#copy_permissions_to_new_folder]  Copy the GroupPermissions of the parent folder to the given folder
-  # [#authorize_reading]               Allows/disallows the current user to read the current folder
-  # [#authorize_deleting]              Check logged in user's delete permissions for a particular folder
-  # [#authorize_deleting_for_children] Check delete permissions for subfolders recursively
-  private
-    # Update the group permissions for a given group, folder and field.
-    # If <i>recursively</i> is true, update the child folders of the given folder too. 
-    def update_group_permissions(folder_id_param, group_check_box_list, field, recursively)
-      # iteratively update the GroupPermissions
-      group_check_box_list.each do |group_id, can_do_it|
-        # get the GroupPermissions
-        group_permission = GroupPermission.find_by_group_id_and_folder_id(group_id, folder_id_param)
-
-        # Do the actual update if the GroupPermission exists;
-        # do not update the permissions of the admins group
-        # (it should always be able to do everything)
-        unless group_permission.blank? or group_permission.group.is_the_administrators_group?
-          case field
-          when 'create':
-            group_permission.can_create = can_do_it
-          when 'read':
-            group_permission.can_read = can_do_it
-          when 'update':
-            group_permission.can_update = can_do_it
-          when 'delete':
-            group_permission.can_delete = can_do_it
-          end
-          group_permission.save
-        end
-      end
-
-      # The recursive part...
-      if recursively
-        # Update the child folders
-        folder = Folder.find_by_id(folder_id_param)
-        if folder
-          folder.children.each do |child_folder|
-            update_group_permissions(child_folder.id, group_check_box_list, field, true)
-          end
-        end
-      end
-    end
-
-    # Copy the GroupPermissions of the parent folder to the given folder
-    def copy_permissions_to_new_folder(folder)
-      # get the 'parent' GroupPermissions
-      GroupPermission.find_all_by_folder_id(folder_id).each do |parent_group_permissions|
-        # create the new GroupPermissions
-        group_permissions = GroupPermission.new
-        group_permissions.folder = folder
-        group_permissions.group = parent_group_permissions.group
-        group_permissions.can_create = parent_group_permissions.can_create
-        group_permissions.can_read = parent_group_permissions.can_read
-        group_permissions.can_update = parent_group_permissions.can_update
-        group_permissions.can_delete = parent_group_permissions.can_delete
-        group_permissions.save
-      end
-    end
-
-    # Redirect to the Root folder and show an error message
-    # if current user cannot read in current folder.
-    def authorize_reading
-      # First check if the folder exists, if it doesn't: show an appropriate message.
-      # If the folder does exist, only authorize the read-rights if it's not the Root folder.
-      unless Folder.find_by_id(folder_id)
-        flash.now[:folder_error] = 'Someone else deleted the folder you are using. Your action was cancelled and you have been taken back to the root folder.'
-        redirect_to(:controller => 'folder', :action => :list, :id => nil) and return false
-      else
-        super unless folder_id == 1
-      end
-    end
-
-    # Redirect to the Root folder and show an error message
-    # if current user cannot delete in current folder
-    def authorize_deleting
-      folder = Folder.find_by_id(folder_id)
-      unless @logged_in_user.can_delete(folder.id)
-        flash.now[:folder_error] = "You don't have delete permissions for this folder."
-        redirect_to :controller => 'folder', :action => :list, :id => folder_id and return false
-      else
-        authorize_deleting_for_children(folder)
-      end
-    end
-
-    # Check the delete permissions for all the child folders of the given folder
-    def authorize_deleting_for_children(folder)
-      folder.children.each do |child_folder|
-        unless @logged_in_user.can_delete(child_folder.id)
-          error_msg = "Sorry, you don't have delete permissions for one of the subfolders."
-          if child_folder.parent.id == folder_id
-            flash.now[:folder_error] = error_msg
-          else
-            flash[:folder_error] = error_msg
-          end
-          redirect_to :controller => 'folder', :action => :list, :id => folder_id and return false
-        else
-          authorize_deleting_for_children(child_folder) # Checks the permissions of a child's children
-        end
-      end
-    end
 end

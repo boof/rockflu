@@ -8,7 +8,7 @@
 # [#destroy] delete a user
 class UserController < ApplicationController
   before_filter :authorize_admin, :except => [:edit, :update]
-  before_filter :does_user_exist, :only => [:edit, :update, :destroy]
+  before_filter :assign_user, :only => [:edit, :update, :destroy]
   before_filter :do_not_destroy_admin_user, :only => :destroy
 
   # The default action, redirects to list.
@@ -95,13 +95,13 @@ class UserController < ApplicationController
   private
     # Add the user to the groups that are checked in the view
     def add_user_to_groups(user, group_check_box_list)
-      if group_check_box_list and @logged_in_user.is_admin?
+      if group_check_box_list and current.user.administrator?
         user.groups.clear # remove the user from all groups
 
         # admins is not in the list cause it's disabled;
         # add it hardcodedly (is that a word?!?) in case of
         # <i>the administrator</i>
-        user.groups.push(Group.find_by_is_the_administrators_group(true)) if user.is_the_administrator?
+        user.groups.push(Group.find_by_administrators(true)) if user.administrator?
 
         # iteratively add the user to the selected groups
         group_check_box_list.each do |group_id, belongs_to|
@@ -122,17 +122,14 @@ class UserController < ApplicationController
       end
     end
 
-    # Check if a user exists before executing an action.
-    # If it doesn't exist: redirect to 'list' and show an error message
-    def does_user_exist
-      # only admins can edit other users's data
-      if @logged_in_user.is_admin?
-        @user = User.find(params[:id])
+    def assign_user
+      @user = if current.user.administrator?
+        User.find params[:id]
       else
-        @user = @logged_in_user
+        current.user
       end
     rescue
       flash.now[:user_error] = 'Someone else deleted the user. Your action was cancelled.'
-      redirect_to :action => :list and return false
+      redirect_to :action => :list
     end
 end

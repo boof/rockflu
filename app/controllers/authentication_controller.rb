@@ -22,39 +22,27 @@ class AuthenticationController < ApplicationController
         session[:jumpto] = nil
         redirect_to(jumpto)
       else
-        flash.now[:login_error] = 'Invalid username/password combination'
+        flash.now[:login_error] = 'Invalid username or password.'
       end
     end
   end
 
-  # Show a form for creating the first user.
-  # Creates the first user: admin.
-  # Create the first group: admins.
-  # Add the admin to the admins group.
-  # Create the Root folder
-  # Give the admins group CRUD rights to the Root folder.
-  # The newly created admin user will be logged in automatically.
-  # Initialize the Ferret index.
-  def create_admin
-    # Check if there already is an admin
-    redirect_to(:action => :login) and return false if User.admin_exists?
+  def setup
+    if User.immortal.exists?
+      redirect_to :action => :login
 
-    if request.post?
-      # Create the object for the administrator user
-      @user = User.create_admin(params[:user][:email], params[:user][:name], params[:user][:password], params[:user][:password_confirmation])
+    elsif request.post?
+      @user = User.new_immortal params[:user]
 
-      # Create Admins group, Root folder and the permissions 
       if @user.save
-        Group.create_admins_group
-        Folder.create_root_folder
-        GroupPermission.create_initial_permissions
-        session[:user_id] = @user.id # Login
+        reset_session
+        session[:user_id] = @user.id
+
+        GroupPermission.
+            allow_crud Folder.make_root(@user), Group.create_administrators(@user)
+
         redirect_to root_path
       end
-
-      # Create the initial Ferret index for files
-      # (note: The index for Folders was created when we created the Root folder)
-      Myfile.rebuild_index
     end
   end
 

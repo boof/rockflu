@@ -1,47 +1,26 @@
 # Groups are used to determine which groups of users have which rights
 # on which folders.
 class Group < ActiveRecord::Base
-  has_many :group_permissions
+  has_many :permissions, :class_name => 'GroupPermissions', :dependent => :destroy
 
   has_and_belongs_to_many :users
 
   validates_uniqueness_of :name
   validates_presence_of :name
 
-  before_destroy :dont_destroy_admins
-  # Don't delete 'admins' from the database
-  def dont_destroy_admins
-    raise "Can't delete admins group" if self.is_the_administrators_group?
+  def protect_administrators
+    not administrators?
   end
+  before_destroy :protect_administrators
 
-  after_destroy :destroy_dependant_group_permissions
-  # Delete dependant group_permissions.
-  # This code should be executed after_destroy.
-  def destroy_dependant_group_permissions
-    self.group_permissions.each do |group_permission|
-      group_permission.destroy
-    end
-  end
+  named_scope :unprivileged, :conditions => {:administrators => false}
+  named_scope :administrators, :conditions => {:administrators => true}
 
-  # Returns whether or not the admins group exists
-  def self.admins_group_exists?
-    group = Group.find_by_is_the_administrators_group(true)
-    return (not group.blank?)
-  end
+  def self.create_administrators(*founders)
+    administrators = Group.administrators.
+        new :name => 'Administrators', :users => founders
+    administrators.save!
 
-  # Create admins group and add admin user to it.
-  def self.create_admins_group
-    if User.admin_exists? # and Group.admins_group_exists?
-      group = Group.new
-      group.name = 'admins'
-      group.is_the_administrators_group = true
-
-      # Add the adminstrator to this group:
-      if user = User.find_by_is_the_administrator(true)
-        user.groups.push(group)
-      end
-
-      group.save # save, so true is returned
-    end
+    administrators
   end
 end

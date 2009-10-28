@@ -39,7 +39,7 @@
 
 	<div id="middle">
 		<div class="actionLinks">
-			<% if @logged_in_user.is_admin? %>
+			<% if current.user.administrator? %>
 			<%= link_to 'Create group', { :action => :new } %>
 			<% end %>
 		</div>

@@ -5,12 +5,12 @@
 	<td><%= folder.updated_at %></td>
 	<td>
 		<% if @can_update %>
-		<%= link_to image_tag('edit.png'), edit_folder_path(folder), :title => 'Rename this folder' %>
+		<%= link_to image_tag('edit.png'), edit_folder_path(folder), :title => 'Rename this folder', :class => 'noBackground' %>
 		<% end %>
 	</td>
 	<td>
 		<% if @can_delete %>
-		<%= link_to image_tag('delete.png'), folder_path(folder), :method => :delete, :title => 'Delete this folder', :confirm => "All files and subfolders will be deleted!\nAre you sure?" %>
+		<%= link_to image_tag('delete.png'), folder_path(folder), :method => :delete, :title => 'Delete this folder', :confirm => "All files and subfolders will be deleted!\nAre you sure?", :class => 'noBackground' %>
 		<% end %>
 	</td>
 	<td></td>

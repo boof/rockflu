@@ -27,16 +27,16 @@ module FoldersHelper
   def CRUD_check_box(type, group_id, folder_id, disabled)
     case type
     when 'create'
-      checked = GroupPermission.find_by_group_id_and_folder_id(group_id, folder_id).can_create ? 'checked' : ''
+      checked = GroupPermissions.find_by_group_id_and_folder_id(group_id, folder_id).can_create ? 'checked' : ''
       check_box('create_check_box', group_id, {:checked => checked, :disabled => disabled, :onclick => 'CheckRead(this.checked, ' + group_id.to_s + ')'}) 
     when 'read'
-      checked = GroupPermission.find_by_group_id_and_folder_id(group_id, folder_id).can_read ? 'checked' : ''
+      checked = GroupPermissions.find_by_group_id_and_folder_id(group_id, folder_id).can_read ? 'checked' : ''
       check_box('read_check_box', group_id, {:checked => checked, :disabled => disabled, :onclick => 'UncheckCreateUpdateDelete(this.checked, ' + group_id.to_s + ')'})
     when 'update'
-      checked = GroupPermission.find_by_group_id_and_folder_id(group_id, folder_id).can_update ? 'checked' : ''
+      checked = GroupPermissions.find_by_group_id_and_folder_id(group_id, folder_id).can_update ? 'checked' : ''
       check_box('update_check_box', group_id, {:checked => checked, :disabled => disabled, :onclick => 'CheckRead(this.checked, ' + group_id.to_s + ')'})
     when 'delete'
-      checked = GroupPermission.find_by_group_id_and_folder_id(group_id, folder_id).can_delete ? 'checked' : ''
+      checked = GroupPermissions.find_by_group_id_and_folder_id(group_id, folder_id).can_delete ? 'checked' : ''
       check_box('delete_check_box', group_id, {:checked => checked, :disabled => disabled, :onclick => 'CheckRead(this.checked, ' + group_id.to_s + ')'})
     end
   end

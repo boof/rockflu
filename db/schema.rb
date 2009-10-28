@@ -16,33 +16,31 @@ ActiveRecord::Schema.define(:version => 20091025205242) do
     t.integer  "filesize"
     t.integer  "folder_id",  :default => 0
     t.integer  "user_id",    :default => 0
-    t.boolean  "indexed",    :default => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
   add_index "files", ["filename"], :name => "index_files_on_filename"
   add_index "files", ["folder_id"], :name => "index_files_on_folder_id"
-  add_index "files", ["indexed"], :name => "index_files_on_indexed"
   add_index "files", ["user_id"], :name => "index_files_on_user_id"
 
   create_table "folders", :force => true do |t|
     t.string   "name"
     t.integer  "user_id",    :default => 0
     t.integer  "parent_id",  :default => 0
-    t.boolean  "is_root",    :default => false
+    t.boolean  "root",       :default => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "folders", ["is_root"], :name => "index_folders_on_is_root"
   add_index "folders", ["name"], :name => "index_folders_on_name"
   add_index "folders", ["parent_id"], :name => "index_folders_on_parent_id"
+  add_index "folders", ["root"], :name => "index_folders_on_root"
   add_index "folders", ["user_id"], :name => "index_folders_on_user_id"
 
   create_table "group_permissions", :force => true do |t|
-    t.integer "folder_id",  :default => 0
-    t.integer "group_id",   :default => 0
+    t.integer "folder_id"
+    t.integer "group_id"
     t.boolean "can_create", :default => false
     t.boolean "can_read",   :default => false
     t.boolean "can_update", :default => false
@@ -58,10 +56,10 @@ ActiveRecord::Schema.define(:version => 20091025205242) do
 
   create_table "groups", :force => true do |t|
     t.string  "name"
-    t.boolean "is_the_administrators_group", :default => false
+    t.boolean "administrators", :default => false
   end
 
-  add_index "groups", ["is_the_administrators_group"], :name => "index_groups_on_is_the_administrators_group"
+  add_index "groups", ["administrators"], :name => "index_groups_on_administrators"
   add_index "groups", ["name"], :name => "index_groups_on_name"
 
   create_table "groups_users", :id => false, :force => true do |t|
@@ -72,13 +70,12 @@ ActiveRecord::Schema.define(:version => 20091025205242) do
   add_index "groups_users", ["group_id", "user_id"], :name => "index_groups_users_on_group_id_and_user_id"
 
   create_table "usages", :force => true do |t|
-    t.datetime "download_date_time"
-    t.integer  "myfile_id",          :default => 0
-    t.integer  "user_id",            :default => 0
+    t.integer  "file_id",    :default => 0
+    t.integer  "user_id",    :default => 0
+    t.datetime "created_at"
   end
 
-  add_index "usages", ["download_date_time"], :name => "index_usages_on_download_date_time"
-  add_index "usages", ["myfile_id"], :name => "index_usages_on_myfile_id"
+  add_index "usages", ["file_id"], :name => "index_usages_on_file_id"
   add_index "usages", ["user_id"], :name => "index_usages_on_user_id"
 
   create_table "users", :force => true do |t|
@@ -87,11 +84,11 @@ ActiveRecord::Schema.define(:version => 20091025205242) do
     t.string  "hashed_password"
     t.string  "password_salt"
     t.string  "rss_access_key"
-    t.boolean "is_the_administrator", :default => false
+    t.boolean "immortal",        :default => false
   end
 
   add_index "users", ["email"], :name => "index_users_on_email"
-  add_index "users", ["is_the_administrator"], :name => "index_users_on_is_the_administrator"
+  add_index "users", ["immortal"], :name => "index_users_on_immortal"
   add_index "users", ["name"], :name => "index_users_on_name"
   add_index "users", ["rss_access_key"], :name => "index_users_on_rss_access_key"
 

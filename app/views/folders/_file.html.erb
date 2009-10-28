@@ -7,7 +7,7 @@
 		<% end %>
 	</td>
 	<td><%= link_to h(file.filename), folder_file_path(current.folder, file) %></td>
-	<td><%= file.filesize %> KB</td>
+	<td><span class="unit"><%= file.filesize %> bytes</span></td>
 	<td><%= file.updated_at %></td>
 	<td>
 		<% if @can_update %>

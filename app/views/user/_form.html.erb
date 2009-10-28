@@ -1,4 +1,4 @@
-<%= name_to_username(error_messages_for('user')) %>
+<%= name_to_username error_messages_for('user') %>
 
 <label for="user_name">Username</label><br/>
 <%= text_field 'user', 'name', :style => 'width:220px;' %><br />
@@ -20,11 +20,11 @@
 <%= password_field 'user', 'password_confirmation', :style => 'width:220px;' %><br />
 <br />
 
-<% if @logged_in_user.is_admin? %>
+<% if current.user.administrator? %>
 Member of these groups<br>
 <table>
 	<tr>
-		<%= render :partial => 'group', :collection => Group.all %>
+		<%= render :partial => 'group', :collection => Group.all, :locals => {:checked => false} %>
 	</tr>
 </table>
 <br />

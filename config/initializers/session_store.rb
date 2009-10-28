@@ -5,7 +5,7 @@
 # Make sure the secret is at least 30 characters and all random, 
 # no regular words or you'll be exposed to dictionary attacks.
 ActionController::Base.session = {
-  :key         => '_testrails_session',
+  :key         => '_rockflu_session',
   :secret      => 'c1f7a85956dbb2d461f9f8c05b628efabe9166bb37c3b898631f9722711ffc1fb57fcf8e4a58a12e15d7db5e98ecc25be4a11a7498b006cbedf5d868d0326791'
 }
 

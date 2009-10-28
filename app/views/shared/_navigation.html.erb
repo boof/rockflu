@@ -1,5 +1,5 @@
 <%= link_to 'Folders', root_path, :id => 'gotoFolders' %>
-<% if @logged_in_user.is_admin? %>
+<% if current.user.administrator? %>
 <%= link_to 'Users', {:controller => 'user', :action => :list}, :id => 'gotoUsers' %>
 <%= link_to 'Groups', {:controller => 'group', :action => :list}, :id => 'gotoGroups' %>
 <% end %>

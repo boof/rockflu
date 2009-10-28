@@ -7,34 +7,26 @@ require 'digest/sha1'
 # Therefore passwords are hashed before they are stored.
 class User < ActiveRecord::Base
   has_and_belongs_to_many :groups
+  def permissions
+    GroupPermissions.for_user self
+  end
   has_many :usages, :dependent => :destroy
-  has_many :myfiles, :dependent => :nullify
+  has_many :files, :class_name => 'Rockflu::File', :dependent => :nullify
   has_many :folders, :dependent => :nullify
 
-  # The password_required field, which determines if
-  # the presence of a password has to be checked
   attr_accessor :password_required
+  attr_reader :password
+
+  named_scope :immortal, :conditions => {:immortal => true}
 
   # We never allow the hashed password to be set from a form
   attr_accessible :name, :email, :password, :password_confirmation, :password_required
 
-  validates_confirmation_of :password
+  validates_confirmation_of :password, :if => :password_required
+  validates_presence_of :password, :if => :password_required
   validates_uniqueness_of :name, :email
   validates_presence_of :name, :email
   validates_format_of :email, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/
-
-  # Validates if the data for this user is valid.
-  def validate
-    # Only validate the presence of a password when it's required
-    if self.password_required and self.password.blank?
-      errors.add(:password, " can't be blank")
-    end
-  end
-
-  # Password getter
-  def password
-    return @password
-  end
 
   # Password setter
   def password=(new_password)
@@ -46,66 +38,31 @@ class User < ActiveRecord::Base
     end
   end
 
-  # Return the User with the given name and plain-text password.
   def self.login(name, password)
-    user = User.find_by_name(name)
-    if (not user.blank?) and (user.hashed_password == User.hash_password(password + user.password_salt))
-      return user
-    else
-      return nil
-    end
+    user = User.find_by_name name
+    user if user and user.hashed_password == User.hash_password("#{ password }#{ user.password_salt }")
   end
 
-  before_create :generate_rss_access_key
-  # Generates an access key for the RSS feeds.
-  def generate_rss_access_key
-    self.rss_access_key = User.random_password(36)
-  end
-
-  before_destroy :dont_destroy_admin
-  # Don't delete 'admin' from the database.
-  def dont_destroy_admin
-    raise "Can't delete admin" if self.is_the_administrator?
-  end
-
-  after_save :clear_plain_text_password
-  # Clear out the plain-text password. This stops it being made
-  # available in the session
-  def clear_plain_text_password
-    @password = nil
-  end
-
-  # Hash the given password (and return it)
   def self.hash_password(password)
-    return Digest::SHA1.hexdigest(password)
+    Digest::SHA1.hexdigest password
   end
 
-  # Generate a random password of <i>len</i> charachters
   def self.random_password(len)
     chars = ('a'..'z').to_a + ('A'..'Z').to_a + ('0'..'9').to_a
     random_password = ''
     1.upto(len) { |i| random_password << chars[rand(chars.size-1)] }
-    return random_password
-  end
 
-  # Returns whether or not the admin user exists
-  def self.admin_exists?
-    user = User.find_by_is_the_administrator(true)
-    return (not user.blank?)
+    random_password
   end
 
   # Creates the admin user (but doesn't save it!)
-  def self.create_admin(email, name, password, password_confirmation)
-    unless User.admin_exists?
-      user = User.new
-      user.email = email
-      user.name = name
-      user.password = password
-      user.password_confirmation = password_confirmation
-      user.is_the_administrator = true
+  def self.new_immortal(attributes)
+    raise if immortal.exists?
+
+    User.new attributes do |user|
+      user.immortal = true
       user.password_required = true
     end
-    return user
   end
 
   # Generates a new password for the user with the given username
@@ -172,47 +129,48 @@ class User < ActiveRecord::Base
   end
 
   # Returns if the user is member of the admins group or not
-  def is_admin?
-    unless self.groups.find_by_is_the_administrators_group(true).blank?
-      return true
-    else
-      return false
-    end
+  def administrator?
+    immortal? or groups.find_by_administrators true
   end
 
   # Use this method to determine if a user is permitted to create in the given folder
-  def can_create(folder_id)
-    self.groups.each do |group|
-      group_permission = group.group_permissions.find_by_folder_id(folder_id)
-      return true unless group_permission.blank? or not group_permission.can_create
-    end
-    return false
+  def can_create?(folder_id)
+    administrator? or
+    permissions.for_create.exists? :folder_id => folder_id
   end
 
   # Use this method to determine if a user is permitted to read in the given folder
-  def can_read(folder_id)
-    self.groups.each do |group|
-      group_permission = group.group_permissions.find_by_folder_id(folder_id)
-      return true unless group_permission.blank? or not group_permission.can_read
-    end
-    return false
+  def can_read?(folder_id)
+    administrator? or
+    permissions.for_read.exists? :folder_id => folder_id
   end
 
-  # Use this method to determine if a user is permitted to update in the given folder
-  def can_update(folder_id)
-    self.groups.each do |group|
-      group_permission = group.group_permissions.find_by_folder_id(folder_id)
-      return true unless group_permission.blank? or not group_permission.can_update
-    end
-    return false
+  def can_update?(folder_id)
+    administrator? or
+    permissions.for_update.exists? :folder_id => folder_id
   end
 
-  # Use this method to determine if a user is permitted to delete in the given folder
-  def can_delete(folder_id)
-    self.groups.each do |group|
-      group_permission = group.group_permissions.find_by_folder_id(folder_id)
-      return true unless group_permission.blank? or not group_permission.can_delete
-    end
-    return false
+  def can_delete?(folder_id)
+    administrator? or
+    permissions.for_delete.exists? :folder_id => folder_id
   end
+
+  def mortal?
+    not immortal?
+  end
+  before_destroy :mortal?
+
+  protected
+
+    def generate_rss_access_key
+      self.rss_access_key = User.random_password 36
+    end
+    before_create :generate_rss_access_key
+
+    def reset_password
+      @password = nil
+      @password_required = false
+    end
+    after_save :reset_password
+
 end

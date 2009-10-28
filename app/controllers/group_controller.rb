@@ -82,7 +82,7 @@ class GroupController < ApplicationController
     # Add the given group and folder to GroupPermissions
     # and (dis)allow everything
     def add_to_group_permissions(group, folder, permission_to_everything)
-      group_permission = GroupPermission.new
+      group_permission = GroupPermissions.new
       group_permission.folder = folder
       group_permission.group = group
       group_permission.can_create = permission_to_everything
@@ -96,7 +96,7 @@ class GroupController < ApplicationController
     # By calling this method via a before_filter,
     # you makes sure this doesn't happen.
     def do_not_rename_or_destroy_admins_group
-      if @group and @group.is_the_administrators_group?
+      if @group and @group.administrators?
         redirect_to :action => :list and return false
       end
     end

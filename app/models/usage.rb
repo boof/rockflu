@@ -2,5 +2,5 @@
 # which file at what time
 class Usage < ActiveRecord::Base
   belongs_to :user
-  belongs_to :myfile
+  belongs_to :file, :class_name => 'Rockflu::File'
 end
