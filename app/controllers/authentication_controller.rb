@@ -38,7 +38,7 @@ class AuthenticationController < ApplicationController
         reset_session
         session[:user_id] = @user.id
 
-        GroupPermission.
+        GroupPermissions.
             allow_crud Folder.make_root(@user), Group.create_administrators(@user)
 
         redirect_to root_path
