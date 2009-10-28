@@ -38,10 +38,10 @@ class Upload < ActiveRecord::Base
     after_create :mv_to_path
 
     # Remove file after record has been deleted from database.
-    def rm_path
-      FileUtils.rm absolute_path
+    def rm
+      FileUtils.rm absolute_path if File.exists? absolute_path
     end
-    after_destroy :rm_path
+    after_destroy :rm
 
     # Strips path portion of filename.
     def basenamify
