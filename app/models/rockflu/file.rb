@@ -21,9 +21,6 @@ class Rockflu::File < ActiveRecord::Base
   def absolute_path
     "#{ Rockflu['upload_path'] }/#{ folder_id }/#{ id }"
   end
-  def to_s
-    filename
-  end
 
   protected
 

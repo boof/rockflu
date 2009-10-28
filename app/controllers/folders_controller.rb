@@ -42,29 +42,18 @@ class FoldersController < ApplicationController
     @folders, @files = @folder.list current.user, folder_order.rstrip, file_order.rstrip
   end
 
-  # Authorizes, sets the appropriate variables and headers.
-  # The feed is actually implemented in: app/views/folder/feed.rxml.
   def feed
-    # check for valid access key:
     user = User.find_by_rss_access_key params[:access_key]
-    @authorized = !user.blank?
+    return render(:nothing => true, :status => 401) unless user
 
-    # get the folder
-    @folder = Folder.find_by_id params[:id]
-
-    # set appriopriate instance variables,
-    # so the feed can be created in folder.rxml
-    if @authorized and not @folder.blank?
-      if @folder.is_root or user.can_read(@folder.id)
-        @folders = @folder.list_subfolders(user, 'name')
-        @files = @folder.list_files(user, 'filename')
-      else
-        @authorized = false
-      end
-    end
-
-    respond_to do |format|
-      format.xml {}
+    @folder = Folder.find params[:id]
+    if !@folder
+      render :xml => render_to_string(:no_feed)
+    elsif user.can_read? params[:id] or @folder.root?
+      @folders, @files = @folder.list user, 'name', 'filename'
+      render :xml => render_to_string(:feed)
+    else
+      render :nothing => true, :status => 401
     end
   end
 

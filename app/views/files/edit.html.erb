@@ -1,6 +1,6 @@
 <p class="title">Rename File</p>
 
-<% form_for :file, @file, :url => folder_file_path(current.folder, @file.id), :html => {:method => :put} do |form| %>
+<% form_for :file, @file, :url => folder_file_path(current.folder, @file), :html => {:method => :put} do |form| %>
 <%= myfile_to_file(error_messages_for('myfile')) %>
 <%= form.label :filename %><br />
 <%= form.text_field 'filename' %><br />
