@@ -12,7 +12,7 @@ class FilesController < ApplicationController
   # Which user downloaded which file at what time will be logged.
   def show
     # Log the 'usage' and return the file.
-    usage = current.user.usages.new :myfile => @file
+    usage = current.user.usages.new :file => @file
 
     if usage.save
       send_file @file.absolute_path,
