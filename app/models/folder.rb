@@ -1,5 +1,5 @@
 class Folder < ActiveRecord::Base
-  acts_as_tree :order => 'name', :counter_cache => :size
+  acts_as_tree :order => 'name', :counter_cache => :size, :touch => true
 
   belongs_to :user
   has_many :files, :class_name => 'Upload', :dependent => :destroy
