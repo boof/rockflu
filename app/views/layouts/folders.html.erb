@@ -12,51 +12,85 @@
 	<%= javascript_include_tag 'jquery.jplayer' %>
 	<%= javascript_include_tag 'jquery.utils.min' %>
 	<script type="text/javascript" charset="utf-8">
+		var playList = [];
+
 		$(function () {
-			$('.focused').select();
-			$('.unit').each(function() {
+			$('.selected').select();
+			$('.filesize').each(function() {
 				this.innerHTML = $.filesizeformat(this.innerHTML);
 			});
-			$('.time').each(function() {
+			$('.timeago').each(function() {
 				this.innerHTML = $.timeago(this.innerHTML);
 			});
-			$('.playButton').
-			each(function() {
-				// add to playlist
-			}).
-			click(function(e) {
-				var jThis = $(this);
 
-				e.preventDefault();
+			var jPlayButton = $('.playButton');
+			if(jPlayButton.length > 0) {
+				playList.index = 0;
+				playList.add = function(song) { this[this.length] = song; }
+				playList.play = function() {
+					this.setCurrent()
+					$('#jPlayer').play();
+				}
+				playList.changeTo = function(playButton) {
+					this.index = this.indexOf(playButton);
+					this.play();
+				}
+				playList.changeToNext = function() {
+					this.index++;
+					if(this.index == this.length) this.index = 0;
+					this.play();
+				}
+				playList.changeToPrevious = function() {
+					this.index--;
+					if(this.index == 0) this.index = this.length;
+					this.play();
+				}
+				playList.setCurrent = function() {
+					var jCurrent = $(this[this.index]);
+					$('#songTitle').html(jCurrent.attr('title'));
+					$('#jPlayer').setFile(jCurrent.attr('href'));
+				}
 
-				$('#song_title').html(jThis.attr('title'));
-				$('#jPlayer').setFile(jThis.attr('href')).play();
-			});
-			$('#jPlayer')
-			.jPlayer({swfPath: '/flash'})
-			.jPlayerId("play", "player_play")
-			.jPlayerId("pause", "player_pause")
-			.jPlayerId("stop", "player_stop")
-			.jPlayerId("loadBar", "player_progress_load_bar")
-			.jPlayerId("playBar", "player_progress_play_bar")
-			.jPlayerId("volumeMin", "player_volume_min")
-			.jPlayerId("volumeMax", "player_volume_max")
-			.jPlayerId("volumeBar", "player_volume_bar")
-			.jPlayerId("volumeBarValue", "player_volume_bar_value")
-			.onProgressChange(function(loaded, p, P, t, T) {
-				var myPlayedTime = new Date(t);
-				var ptMin = (myPlayedTime.getUTCMinutes() < 10) ? "0" + myPlayedTime.getUTCMinutes() : myPlayedTime.getUTCMinutes();
-				var ptSec = (myPlayedTime.getUTCSeconds() < 10) ? "0" + myPlayedTime.getUTCSeconds() : myPlayedTime.getUTCSeconds();
-				$('#play_time').text(ptMin+":"+ptSec);
+				jPlayButton.each(function() { playList.add(this); }).
+				click(function(e) {
+					e.preventDefault();
+					playList.changeTo(this)
+				});
+				$('#jPlayer')
+				.jPlayer({
+					swfPath: '/flash',
+					ready: function() {
+						$('#playerContainer').show();
+						playList.setCurrent();
+					}
+				})
+				.jPlayerId("play", "playerPlay")
+				.jPlayerId("pause", "playerPause")
+				.jPlayerId("loadBar", "playerProgressLoadBar")
+				.jPlayerId("playBar", "playerProgressPlayBar")
+				.jPlayerId("volumeMin", "playerVolumeMin")
+				.jPlayerId("volumeMax", "playerVolumeMax")
+				.jPlayerId("volumeBar", "playerVolumeBar")
+				.jPlayerId("volumeBarValue", "playerVolumeBarValue")
+				.onProgressChange(function(loaded, p, P, t, T) {
+					var tLocal = new Date(t),
+						TLocal = new Date(T),
+						tMinutes = tLocal.getUTCMinutes(),
+						tSeconds = tLocal.getUTCSeconds(),
+						TMinutes = TLocal.getUTCMinutes(),
+						TSeconds = TLocal.getUTCSeconds(),
+						ptMin = (tMinutes < 10) ? '0' + tMinutes : tMinutes,
+						ptSec = (tSeconds < 10) ? '0' + tSeconds : tSeconds,
+						ttMin = (TMinutes < 10) ? '0' + TMinutes : TMinutes,
+						ttSec = (TSeconds < 10) ? '0' + TSeconds : TSeconds;
 
-				var myTotalTime = new Date(T);
-				var ttMin = (myTotalTime.getUTCMinutes() < 10) ? "0" + myTotalTime.getUTCMinutes() : myTotalTime.getUTCMinutes();
-				var ttSec = (myTotalTime.getUTCSeconds() < 10) ? "0" + myTotalTime.getUTCSeconds() : myTotalTime.getUTCSeconds();
-				$('#total_time').text(ttMin+":"+ttSec);
-			})
-			.onSoundComplete( function() {
-				// next/random song or replay one/all
-			});
+					$('#playTime').text(ptMin + ':' + ptSec);
+					$('#totalTime').text(ttMin + ':' + ttSec);
+				})
+				.onSoundComplete(function() {
+					playList.changeToNext(); // or random or repeat one/all
+				});
+			}
 		});
 	</script>
 </head>

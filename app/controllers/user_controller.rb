@@ -13,12 +13,6 @@ class UserController < ApplicationController
 
   # The default action, redirects to list.
   def index
-    list
-    render :action => :list
-  end
-
-  # List all the users.
-  def list
     @users = User.find(:all, :order => 'name')
   end
 
@@ -41,14 +35,14 @@ class UserController < ApplicationController
           # send an e-mail to the new user; informing him about his account
           PasswordMailer.deliver_new_user(@user.name, @user.email, params[:user][:password])
           flash[:user_confirmation] = "The new user's account information has been e-mailed to " + @user.email
-          redirect_to :action => :list
+          redirect_to :action => :index
         rescue Exception => e
           if e.message.match('getaddrinfo: No address associated with nodename')
             flash[:user_error] = 'The mail server settings in the environment file are incorrect. Check the installation instructions to solve this problem. The user was created nevertheless.'
           else
             flash[:user_error] = e.message + ".<br /><br />This means either the user's e-mail address or Boxroom's configuration for e-mailing is invalid. Please contact the administrator or check the installation instructions. The user was created nevertheless."
           end
-          redirect_to :action => :list
+          redirect_to :action => :index
         end
       else
         render :action => :new
@@ -58,7 +52,6 @@ class UserController < ApplicationController
 
   # Show a form in which the data of a user can be edited.
   def edit
-    render
   end
 
   # Update the user attributes with the posted variables from the 'edit' view.
@@ -74,7 +67,7 @@ class UserController < ApplicationController
           flash[:user_confirmation] = 'You saved your settings successfully'
           redirect_to :action => :edit, :id => params[:id]
         else
-          redirect_to :action => :list
+          redirect_to :action => :index
         end
       else
         render :action => :edit
@@ -85,7 +78,7 @@ class UserController < ApplicationController
   # Delete a user.
   def destroy
     @user.destroy
-    redirect_to :action => :list
+    redirect_to :action => :index
   end
 
   # These methods are private:
@@ -118,7 +111,7 @@ class UserController < ApplicationController
     # you makes sure this doesn't happen.
     def do_not_destroy_admin_user
       if @user and @user.is_the_administrator?
-        redirect_to :action => :list and return false
+        redirect_to :action => :index and return false
       end
     end
 
@@ -130,6 +123,6 @@ class UserController < ApplicationController
       end
     rescue
       flash.now[:user_error] = 'Someone else deleted the user. Your action was cancelled.'
-      redirect_to :action => :list
+      redirect_to :action => :index
     end
 end

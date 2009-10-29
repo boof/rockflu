@@ -18,6 +18,10 @@ class Upload < ActiveRecord::Base
     self.name = tempfile.original_filename
   end
 
+  def id3
+    @id3 ||= ID3Lib::Tag.new absolute_path
+  end
+
   def extname
     File.extname name
   end

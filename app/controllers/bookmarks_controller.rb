@@ -6,9 +6,7 @@ class BookmarksController < ApplicationController
   def show
   end
 
-  def new_bookmark
-  end
-  def new_folder
+  def new
   end
 
   def create
@@ -17,9 +15,7 @@ class BookmarksController < ApplicationController
     @xbel.write xbel_path
   end
 
-  def edit_bookmark
-  end
-  def edit_folder
+  def edit
   end
 
   def update

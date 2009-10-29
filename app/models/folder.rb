@@ -23,7 +23,7 @@ class Folder < ActiveRecord::Base
   alias_method :ls, :list
 
   def self.make_root(owner)
-    root = new (:name => '/') do |folder|
+    root = new(:name => '/') do |folder|
       folder.user = owner
       folder.root = true
     end

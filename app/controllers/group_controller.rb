@@ -13,12 +13,6 @@ class GroupController < ApplicationController
 
   # The default action, redirects to list.
   def index
-    list
-    render :action => :list
-  end
-
-  # List all the groups.
-  def list
     @groups = Group.find(:all, :order => 'name')
   end
 
@@ -36,7 +30,7 @@ class GroupController < ApplicationController
         # give the new group permissions to the folders
         give_permissions_to_folders(@group, params[:permission_to_everything][:checked] == 'yes' ? true : false)
 
-        redirect_to :action => :list
+        redirect_to :action => :index
       else
         render :action => :new
       end
@@ -52,7 +46,7 @@ class GroupController < ApplicationController
   def update
     if request.post?
       if @group.update_attributes(params[:group])
-        redirect_to :action => :list
+        redirect_to :action => :index
       else
         render :action => :rename
       end
@@ -62,7 +56,7 @@ class GroupController < ApplicationController
   # Delete a group.
   def destroy
     @group.destroy
-    redirect_to :action => :list
+    redirect_to :action => :index
   end
 
   # These methods are private:
@@ -97,7 +91,7 @@ class GroupController < ApplicationController
     # you makes sure this doesn't happen.
     def do_not_rename_or_destroy_admins_group
       if @group and @group.administrators?
-        redirect_to :action => :list and return false
+        redirect_to :action => :index and return false
       end
     end
 
@@ -107,6 +101,6 @@ class GroupController < ApplicationController
       @group = Group.find(params[:id])
     rescue
       flash.now[:group_error] = 'Someone else deleted the group. Your action was cancelled.'
-      redirect_to :action => :list and return false
+      redirect_to :action => :index and return false
     end
 end

@@ -7,8 +7,8 @@
 		<% end %>
 	</td>
 	<td><%= link_to h(file.name), folder_file_path(current.folder, file) %></td>
-	<td><span class="unit"><%= file.size %> bytes</span></td>
-	<td class="time"><%= file.updated_at.iso8601 %></td>
+	<td><span class="filesize"><%= file.size %> Bytes</span></td>
+	<td class="timeago"><%= file.updated_at.iso8601 %></td>
 	<td>
 		<% if @can_update %>
 		<%= link_to image_tag('edit.png'), edit_folder_file_path(current.folder, file), :title => 'Rename this file', :class => 'noBackground' %>
