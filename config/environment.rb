@@ -13,7 +13,7 @@ Rails::Initializer.run do |config|
 
   # Specify gems that this application depends on and have them installed with rake gems:install
   config.gem 'xbel'
-  config.gem 'id3lib-ruby'
+  config.gem 'id3lib-ruby', :lib => 'id3lib'
   # config.gem 'acts_as_ferret'
   # config.gem "hpricot", :version => '0.6', :source => "http://code.whytheluckystiff.net"
   # config.gem "sqlite3-ruby", :lib => "sqlite3"
