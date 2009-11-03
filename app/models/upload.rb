@@ -55,11 +55,8 @@ class Upload < ActiveRecord::Base
   end
 
   def self.fuzzy_find_all_by_name(name, options = {})
-    select = 'files.*, lower(name) AS lower_name'
-    conditions = ['lower_name = ?', name.downcase]
-    options.update :select => select, :conditions => conditions
-
-    find :all, options
+    conditions = ['lower(name) = ?', name.downcase]
+    find :all, options.merge(:conditions => conditions)
   end
 
   belongs_to :folder, :touch => true, :counter_cache => :size

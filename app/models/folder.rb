@@ -23,11 +23,8 @@ class Folder < ActiveRecord::Base
   alias_method :ls, :list
 
   def self.fuzzy_find_all_by_name(name, options = {})
-    select = 'folders.*, lower(name) AS lower_name'
-    conditions = ['lower_name = ?', name.downcase]
-    options.update :select => select, :conditions => conditions
-
-    find :all, options
+    conditions = ['lower(name) = ?', name.downcase]
+    find :all, options.merge(:conditions => conditions)
   end
   def self.make_root(owner)
     root = new(:name => '/') do |folder|
