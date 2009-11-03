@@ -23,7 +23,7 @@
 		<td><%= image_tag('folder.png') %></td>
 		<td><%= link_to '..', folder_path(parent) %></td>
 		<td><%= parent.size %></td>
-		<td class="time"><%= parent.updated_at.iso8601 %></td>
+		<td class="timeago"><%= parent.updated_at.iso8601 %></td>
 		<td colspan="3"></td>
 	</tr>
 	<% end %>

@@ -4,105 +4,24 @@
 <html>
 <head>
 	<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
-	<meta http-equiv="X-UA-Compatible" content="chrome=1">
+	<%= chrome_frame_meta %>
 	<title>Rockflu</title>
 	<%= stylesheet_link_tag 'boxroom', 'jplayer' %>
-	<%= auto_discovery_link_tag(:rss, { :controller => 'folder', :action => :feed, :id => controller.folder_id, :access_key => @logged_in_user.rss_access_key })%>
-	<%= javascript_include_tag 'jquery-1.3.2.min', 'application' %>
-	<%= javascript_include_tag 'jquery.jplayer' %>
-	<%= javascript_include_tag 'jquery.utils.min' %>
+
+	<%= auto_discovery_link_tag :rss, feed_folder_path(:id => current.folder.id, :access_key => @current.user.rss_access_key) %>
+
+	<%= javascript_include_tag 'jquery-1.3.2.min', 'jquery.utils.min', 'application', 'convenience' %>
+	<%= javascript_include_tag 'jquery.jplayer', 'jquery.playlist' %>
+
 	<script type="text/javascript" charset="utf-8">
-		var playList = [];
-
 		$(function () {
-			$('.selected').select();
-			$('.filesize').each(function() {
-				this.innerHTML = $.filesizeformat(this.innerHTML);
-			});
-			$('.timeago').each(function() {
-				this.innerHTML = $.timeago(this.innerHTML);
-			});
-
-			var jPlayButton = $('.playButton');
-			if(jPlayButton.length > 0) {
-				playList.index = 0;
-				playList.add = function(song) { this[this.length] = song; }
-				playList.play = function() {
-					this.setCurrent()
-					$('#jPlayer').play();
-				}
-				playList.changeTo = function(playButton) {
-					this.index = this.indexOf(playButton);
-					this.play();
-				}
-				playList.changeToNext = function() {
-					this.index++;
-					if(this.index == this.length) this.index = 0;
-					this.play();
-				}
-				playList.changeToPrevious = function() {
-					this.index--;
-					if(this.index == 0) this.index = this.length;
-					this.play();
-				}
-				playList.setCurrent = function() {
-					var jCurrent = $(this[this.index]);
-					$('#songTitle').html(jCurrent.attr('title'));
-					$('#jPlayer').setFile(jCurrent.attr('href'));
-				}
-
-				jPlayButton.each(function() { playList.add(this); }).
-				click(function(e) {
-					e.preventDefault();
-					playList.changeTo(this)
-				});
-				$('#jPlayer')
-				.jPlayer({
-					swfPath: '/flash',
-					ready: function() {
-						$('#playerContainer').show();
-						playList.setCurrent();
-					}
-				})
-				.jPlayerId("play", "playerPlay")
-				.jPlayerId("pause", "playerPause")
-				.jPlayerId("loadBar", "playerProgressLoadBar")
-				.jPlayerId("playBar", "playerProgressPlayBar")
-				.jPlayerId("volumeMin", "playerVolumeMin")
-				.jPlayerId("volumeMax", "playerVolumeMax")
-				.jPlayerId("volumeBar", "playerVolumeBar")
-				.jPlayerId("volumeBarValue", "playerVolumeBarValue")
-				.onProgressChange(function(loaded, p, P, t, T) {
-					var tLocal = new Date(t),
-						TLocal = new Date(T),
-						tMinutes = tLocal.getUTCMinutes(),
-						tSeconds = tLocal.getUTCSeconds(),
-						TMinutes = TLocal.getUTCMinutes(),
-						TSeconds = TLocal.getUTCSeconds(),
-						ptMin = (tMinutes < 10) ? '0' + tMinutes : tMinutes,
-						ptSec = (tSeconds < 10) ? '0' + tSeconds : tSeconds,
-						ttMin = (TMinutes < 10) ? '0' + TMinutes : TMinutes,
-						ttSec = (TSeconds < 10) ? '0' + TSeconds : TSeconds;
-
-					$('#playTime').text(ptMin + ':' + ptSec);
-					$('#totalTime').text(ttMin + ':' + ttSec);
-				})
-				.onSoundComplete(function() {
-					playList.changeToNext(); // or random or repeat one/all
-				});
-			}
+			Convenience.applyGeneric();
+			$('.playButton').playlist();
 		});
 	</script>
 </head>
 <body id="foldersLayout">
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
-	<div id="chromeFrame"></div>
-	<script>
-	CFInstall.check({
-		node: "chromeFrame",
-		destination: "http://www.waikiki.com"
-	});
-	</script>
+	<%= chrome_frame %>
 
 	<div id="top">
 		<div class="header">
@@ -127,18 +46,12 @@
 		</div>
 
 		<div class="content">
-			<table cellspacing="0" cellpadding="0">
-				<tr>
-					<td>
-						<%= yield %>
-					</td>
-				</tr>
-			</table>
+			<%= yield %>
 		</div>
 	</div>
 
 	<div id="bottom">
-		<%= render :partial=>'shared/jplayer' %>
+		<%= render :partial => 'shared/jplayer' %>
 	</div>
 
 </body>

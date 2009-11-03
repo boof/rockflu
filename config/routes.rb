@@ -11,4 +11,6 @@ ActionController::Routing::Routes.draw do |map|
 
   # TODO: remove...
   map.connect ':controller/:action/:id'
+
+  map.connect 'open/*path', :controller => 'convenience', :action => 'open'
 end

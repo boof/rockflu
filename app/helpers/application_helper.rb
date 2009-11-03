@@ -5,6 +5,18 @@ module ApplicationHelper
     string.try :sub, 'Name', 'Username'
   end
 
+  def chrome_frame_meta
+    '<meta http-equiv="X-UA-Compatible" content="chrome=1">'
+  end
+  def chrome_frame(node = 'chromeFrame', options = {})
+    options[:node] = node
+    "
+      #{ javascript_include_tag 'vendor/CFInstall.min' }
+      #{ content_tag :div, :id => node }
+      #{ javascript_tag 'CFInstall.check(%s);' % options.to_json }
+    "
+  end
+
   # Returns the path to the given folder.
   # Link to self determines wether every part of the path links to itself.
   def path(folder, link_to_self, opts = {})

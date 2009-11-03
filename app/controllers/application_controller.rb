@@ -23,6 +23,10 @@ class ApplicationController < ActionController::Base; protected
   public :folder_id
   hide_action :folder_id
 
+  def param(key, *default)
+    params.fetch key.to_s, *default
+  end
+
   # Check if a folder exists before executing an action.
   # If it doesn't exist: redirect to root and show an error message
   def does_folder_exist

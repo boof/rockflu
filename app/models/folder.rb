@@ -22,6 +22,13 @@ class Folder < ActiveRecord::Base
   end
   alias_method :ls, :list
 
+  def self.fuzzy_find_all_by_name(name, options = {})
+    select = 'folders.*, lower(name) AS lower_name'
+    conditions = ['lower_name = ?', name.downcase]
+    options.update :select => select, :conditions => conditions
+
+    find :all, options
+  end
   def self.make_root(owner)
     root = new(:name => '/') do |folder|
       folder.user = owner

@@ -1,7 +1,7 @@
 <tr class="<%= cycle('even', 'odd') %>">
 	<td>
 		<% if file.extname == '.mp3' %>
-		<%= link_to image_tag('media-playback-start.png'), folder_file_path(current.folder, file), :title => file.name, :class => 'noBackground playButton' %>
+		<%= link_to image_tag('media-playback-start.png'), folder_file_path(current.folder, file), :title => "#{ file.id3 }", :class => 'noBackground playButton' %>
 		<% else %>
 		<%= image_tag 'file.png' %>
 		<% end %>
