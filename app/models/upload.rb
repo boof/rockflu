@@ -89,6 +89,10 @@ class Upload < ActiveRecord::Base
     self.temporary_path = tempfile.path
     self.size = tempfile.size
     self.name = tempfile.original_filename
+    self.type = MIME::Types.of(tempfile.original_filename).first
+
+    type.media_type != 'text' or
+    self.charset = CMess::GuessEncoding::automatic(tempfile)
   end
 
   def id3
