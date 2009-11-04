@@ -1,5 +1,6 @@
 class Upload < ActiveRecord::Base
   set_table_name :files
+  self.inheritance_column = false
 
   # code by Ken Bloom (see Ruby Quiz #136), slightly modified by me
   Tag = Struct.new :title, :artist, :album, :year, :comment, :track, :genre do
@@ -67,6 +68,20 @@ class Upload < ActiveRecord::Base
   validates_presence_of :name, :blank => false
   validates_uniqueness_of :name, :scope => 'folder_id'
   validates_numericality_of :size, :greater_than => 0
+
+  def type=(type)
+    write_attribute :type, type.to_s
+    @type = type
+  end
+  def type
+    @type ||= MIME::Types[read_attribute(:type)].first
+  end
+  def encoding
+    type.encoding
+  end
+  def type_with_charset
+    charset ? "#{ type }; charset=#{ charset}" : type
+  end
 
   def source=(tempfile)
     raise ArgumentError unless tempfile

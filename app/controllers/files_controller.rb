@@ -11,9 +11,12 @@ class FilesController < ApplicationController
   def show
     usage = current.user.usages.new :file => @file
 
+    headers['Content-Transfer-Encoding'] = @file.encoding
+
     if usage.save
       send_file @file.absolute_path,
-          :filename => @file.name,
+          :type => @file.type_with_charset,
+          :filename => @file.name, :disposition => 'inline',
           :x_sendfile => Rockflu['x_sendfile']
     end
   end

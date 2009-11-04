@@ -1,0 +1,223 @@
+#! /usr/bin/ruby
+
+#--
+###############################################################################
+#                                                                             #
+# guess_encoding -- Assist with guessing the encoding of some input at hand   #
+#   [A component of cmess, the encoding tool-box]                             #
+#                                                                             #
+# Copyright (C) 2007-2008 University of Cologne,                              #
+#                         Albertus-Magnus-Platz,                              #
+#                         50932 Cologne, Germany                              #
+#                                                                             #
+# Authors:                                                                    #
+#     Jens Wille <jens.wille@uni-koeln.de>                                    #
+#                                                                             #
+# cmess is free software; you can redistribute it and/or modify it under the  #
+# terms of the GNU General Public License as published by the Free Software   #
+# Foundation; either version 3 of the License, or (at your option) any later  #
+# version.                                                                    #
+#                                                                             #
+# cmess is distributed in the hope that it will be useful, but WITHOUT ANY    #
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS   #
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more       #
+# details.                                                                    #
+#                                                                             #
+# You should have received a copy of the GNU General Public License along     #
+# with cmess. If not, see <http://www.gnu.org/licenses/>.                     #
+#                                                                             #
+###############################################################################
+#++
+
+require 'optparse'
+
+require 'rubygems'
+require 'nuggets/string/word_wrap'
+
+$: << File.join(File.dirname(__FILE__), '..', 'lib')
+
+require 'cmess/guess_encoding'
+require 'cmess/cli'
+
+include CMess::CLI
+
+PROGNAME = File.basename($0)
+
+# short-cut
+CGE = CMess::GuessEncoding
+
+options = {
+  :input                => STDIN,
+  :line                 => 1,
+  :encodings            => nil,
+  :additional_encodings => [],
+  :target_encoding      => determine_system_encoding,
+  :manual               => false,
+  :chunk_size           => nil,
+  :ignore_bom           => false,
+  :charcodes            => nil,
+  :decimal              => false,
+  :octal                => false
+}
+
+OptionParser.new(nil, 40) { |opts|
+  opts.banner = "Usage: #{$0} [options] [FILE...]"
+
+  opts.separator ''
+  opts.separator 'Options:'
+
+  opts.on('-i', '--input FILE', "Input file to read from [Default: STDIN]") { |f|
+    options[:input] = open_file_or_std(f)
+    options[:input_set] = true
+  }
+
+  opts.separator ''
+  opts.separator '  * Automatic guessing'
+  opts.separator ''
+
+  opts.on('-c', '--chunk-size SIZE', Integer, "Size of chunks input will be read in until a valid encoding", "has been found; by default the whole file will be read") { |s|
+    options[:chunk_size] = s
+  }
+
+  opts.separator ''
+
+  opts.on('-b', '--ignore-bom', "Ignore detected BOM (if any)", "(see below for a list of supported encodings)") {
+    options[:ignore_bom] = true
+  }
+
+  opts.separator ''
+  opts.separator '  * Manual guessing'
+  opts.separator ''
+
+  opts.on('-m', '--manual', "Present variously encoded input for manual encoding guessing") {
+    options[:manual] = true
+  }
+
+  opts.separator ''
+
+  opts.on('-l', '--line LINE', "Line number of input file to use for testing [Default: #{options[:line]}]") { |l|
+    options[:line] = l.to_i
+
+    unless options[:line] > 0
+      options[:input].read  # prevent 'Broken pipe' error
+      abort "Line number must be greater then 0!"
+    end
+  }
+
+  opts.separator ''
+
+  opts.on('-e', '--encodings ENCODINGS...', "List of encodings to try >instead of< default (see below)") { |e|
+    options[:encodings] ||= []
+    options[:encodings] += e.split(SPLIT_ARG_LIST_RE)
+  }
+
+  opts.on('-a', '--additional-encodings ENCODINGS...', "List of encodings to try >in addition to< default (see below)") { |e|
+    options[:additional_encodings] += e.split(SPLIT_ARG_LIST_RE)
+  }
+
+  opts.separator ''
+
+  opts.on('-t', '--target-encoding ENCODING', "Target encoding of your system [Default: #{options[:target_encoding]}]") { |e|
+    options[:target_encoding] = e
+  }
+
+  opts.separator ''
+
+  opts.on('--list-encodings', 'Print a list of all available encodings on your system and exit') {
+    puts CGE::Encoding.all_encodings
+    exit
+  }
+
+  opts.separator ''
+  opts.separator '  * Charcodes'
+  opts.separator ''
+
+  opts.on('-C', '--charcodes CHARCODES', "Specify a list of character codes (in hexadecimal by default)", "for manual guessing. (Options '-e', '-a', and '-t' apply here", "as well; see under \"Manual guessing\" for details.)") { |c|
+    options[:charcodes] = c.split(SPLIT_ARG_LIST_RE)
+  }
+
+  opts.separator ''
+
+  opts.on('-D', '--decimal', "Charcodes are in decimal") {
+    options[:decimal] = true
+  }
+
+  opts.on('-O', '--octal', "Charcodes are in octal") {
+    options[:octal] = true
+  }
+
+  opts.separator ''
+  opts.separator 'Generic options:'
+
+  opts.on('-h', '--help', "Print this help message and exit") {
+    puts opts
+    exit
+  }
+
+  opts.on('--version', "Print program version and exit") {
+    puts "#{PROGNAME} v#{CGE::VERSION} (part of cmess v#{CMess::VERSION})"
+    exit
+  }
+
+  opts.separator ''
+  opts.separator 'Supported encodings for automatic guessing (will be tried in that order):'
+  CGE::Automatic.supported_encodings.join(', ').word_wrap(110, true).each { |l|
+    opts.separator l
+  }
+
+  opts.separator ''
+  opts.separator 'Supported encodings for BOM detection (will be tried in that order):'
+  CGE::Automatic.supported_boms.join(', ').word_wrap(110, true).each { |l|
+    opts.separator l
+  }
+
+  opts.separator ''
+  opts.separator 'Default encodings for manual guessing:'
+  CGE::Manual::ENCODINGS.join(', ').word_wrap(110, true).each { |l|
+    opts.separator l
+  }
+
+  opts.separator ''
+  opts.separator 'Likely candidates for additional testing:'
+  CGE::Manual::CANDIDATES.join(', ').word_wrap(110, true).each { |l|
+    opts.separator l
+  }
+
+  opts.separator ''
+  opts.separator 'NOTE: To select all encodings available on your system, specify __ALL__.'
+
+  opts.separator ''
+  opts.separator "When FILE is -, STDIN is used."
+}.parse!
+
+cli do
+  trailing_args_as_input(options)
+
+  if options[:manual] || options[:charcodes]
+    options[:target_encoding].call if options[:target_encoding].respond_to?(:call)
+
+    if charcodes = options[:charcodes]
+      base  = options[:octal] ? 8 : options[:decimal] ? 10 : 16
+      input = charcodes.map { |c| c.to_i(base).chr }.join
+    else
+      # reset line counter
+      $. = 0
+
+      input = options[:input].each { |line|
+        break line if $. == options[:line]
+      }
+
+      abort "Input was empty!" if $..zero?
+      abort "Line not found -- input has only #{$.} line#{'s' if $. != 1}" unless input.is_a?(String)
+    end
+
+    CGE::Manual.display(
+      input,
+      options[:target_encoding],
+      options[:encodings],
+      options[:additional_encodings]
+    )
+  else  # automatic
+    puts CGE::Automatic.guess(options[:input], options[:chunk_size], options[:ignore_bom])
+  end
+end
